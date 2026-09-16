@@ -18,6 +18,11 @@ struct SettingsView: View {
             Section("Nudges") {
                 Stepper("Remind me after \(prefs.nudgeAfterMinutes) min of sitting", value: $prefs.nudgeAfterMinutes, in: 15...120, step: 5)
                 Stepper("Repeat every \(prefs.nudgeRepeatMinutes) min", value: $prefs.nudgeRepeatMinutes, in: 5...60, step: 5)
+                Picker("Style", selection: $prefs.nudgeStyle) {
+                    ForEach(NudgeStyle.allCases) { style in Text(style.title).tag(style) }
+                }
+                Text(prefs.nudgeStyle.detail).font(.caption).foregroundStyle(.secondary)
+                Button("Preview nudge") { model.previewNudge() }
                 LabeledContent("Notifications") {
                     if model.notifier.authorized {
                         Label("Allowed", systemImage: "checkmark.circle.fill").foregroundStyle(.green)

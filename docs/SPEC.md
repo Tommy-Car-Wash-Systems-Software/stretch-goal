@@ -52,7 +52,11 @@ Mirrors Brian's current personal app, plus a team tab.
 - Idle seconds via `CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: ...)`, sampled every 10 s.
 - Screen lock / sleep / session resign via `NSWorkspace` + `DistributedNotificationCenter` count as away.
 - Sitting timer starts on activity, resets after ≥ 3 min idle. A reset after ≥ 20 min of sitting = one detected break.
-- Nudge notification at 45 min sitting (configurable), repeats every 15 min until a break.
+- Nudge at 45 min sitting (configurable), repeats every 15 min until a break. Three styles in
+  Settings: **floating panel** (default; a non-activating card under the menu bar on every
+  screen, never steals keyboard focus, auto-dismisses after 60 s), **full screen** (dims every
+  screen until a break is picked or snoozed), or **system banner only**. A detected break, a
+  started session, or a screen lock dismisses any visible nudge.
 - Optional work-hours window in Settings (default 07:00–18:00); nothing is counted outside it.
 - Guided sessions run in their own floating window (the menu bar popover closes on focus loss).
   The window is also reachable via `stretchgoal://session/<move|breathe|stretch|eyeRest>`, which

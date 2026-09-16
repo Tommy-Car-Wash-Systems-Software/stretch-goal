@@ -9,6 +9,7 @@ final class AppModel {
     let prefs = Preferences()
     let notifier = Notifier()
     let sessions = SessionRunner()
+    let nudges = NudgePresenter()
     let rules: ScoringRules = .standard
     let deviceId: String
     let memberId: String
@@ -34,6 +35,9 @@ final class AppModel {
         sessions.onComplete = { [weak self] kind in self?.complete(kind) }
         monitor = ActivityMonitor { [weak self] idle, locked in self?.sample(idleSeconds: idle, locked: locked) }
         Task { await notifier.requestAuthorization() }
+        #if DEBUG
+        observeDebugTriggers()
+        #endif
     }
 
     // MARK: Derived state
@@ -83,7 +87,24 @@ final class AppModel {
     }
 
     func start(_ kind: SessionKind) {
+        nudges.dismiss()
         sessions.start(GuidedSession.standard(kind))
+    }
+
+    /// Fires the configured nudge immediately so the person can see what it looks like.
+    func previewNudge() {
+        showNudge(sitMinutes: Int(sittingSeconds(at: .now)) / 60)
+    }
+
+    private func showNudge(sitMinutes: Int) {
+        if prefs.nudgeStyle == .banner {
+            notifier.nudge(sitMinutes: sitMinutes)
+            return
+        }
+        nudges.show(sitMinutes: sitMinutes, style: prefs.nudgeStyle) { kind in
+            guard let kind, let url = URL(string: "stretchgoal://session/\(kind.rawValue)") else { return }
+            NSWorkspace.shared.open(url)
+        }
     }
 
     private func complete(_ kind: SessionKind) {
@@ -102,9 +123,13 @@ final class AppModel {
         self.locked = locked
         rolloverIfNeeded(now)
         let events = Tracker.advance(&day.tracker, now: now, idleSeconds: idleSeconds, locked: locked, config: prefs.trackerConfig)
+        if locked { nudges.dismiss() }
         for event in events {
-            if case let .nudge(sitSeconds) = event {
-                notifier.nudge(sitMinutes: sitSeconds / 60)
+            switch event {
+            case let .nudge(sitSeconds):
+                showNudge(sitMinutes: sitSeconds / 60)
+            case .breakDetected:
+                nudges.dismiss()
             }
         }
         commit(now: now)
@@ -131,6 +156,18 @@ final class AppModel {
     }
 
     var storeDirectory: URL { store.directory }
+
+    #if DEBUG
+    private var debugObserver: (any NSObjectProtocol)?
+
+    private func observeDebugTriggers() {
+        debugObserver = DistributedNotificationCenter.default().addObserver(
+            forName: Notification.Name("com.brianp.StretchGoal.debug.nudge"), object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.previewNudge() }
+        }
+    }
+    #endif
 }
 
 enum Identity {
