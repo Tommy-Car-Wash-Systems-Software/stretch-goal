@@ -97,6 +97,8 @@ cd Packages/StretchGoalCore && swift test
 ```
 
 Cut a release with `scripts/release.sh` (needs a checkout of the tap at `../homebrew-tap`).
+The app icon is generated, not drawn by hand: `swift scripts/make-icon.swift out.png`, then
+resize into `StretchGoal/Resources/Assets.xcassets/AppIcon.appiconset/`.
 Design notes and the sync protocol are in [docs/SPEC.md](docs/SPEC.md).
 
 ## Why
