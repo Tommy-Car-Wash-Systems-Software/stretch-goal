@@ -1,0 +1,45 @@
+name: StretchGoal
+options:
+  bundleIdPrefix: com.brianp
+  createIntermediateGroups: true
+  deploymentTarget:
+    macOS: "26.0"
+packages:
+  StretchGoalCore:
+    path: Packages/StretchGoalCore
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    SWIFT_UPCOMING_FEATURE_EXISTENTIAL_ANY: YES
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+    DEVELOPMENT_TEAM: ""
+    ENABLE_HARDENED_RUNTIME: NO
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  StretchGoal:
+    type: application
+    platform: macOS
+    sources:
+      - StretchGoal
+    dependencies:
+      - package: StretchGoalCore
+    info:
+      path: StretchGoal/Info.plist
+      properties:
+        CFBundleDisplayName: Stretch Goal
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSUIElement: true
+        LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
+        NSHumanReadableCopyright: ""
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.brianp.StretchGoal
+        PRODUCT_NAME: Stretch Goal
+        GENERATE_INFOPLIST_FILE: NO
+        COMBINE_HIDPI_IMAGES: YES
+    scheme:
+      testTargets: []

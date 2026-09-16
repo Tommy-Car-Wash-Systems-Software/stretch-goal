@@ -72,8 +72,10 @@ Per day, all counts capped so spamming cannot win.
 | Mindful (completed Breathe/Eye rest) | 8 | 2 | 4 |
 | All three goals hit | +25 bonus | | |
 
-Streak = consecutive weekdays with all goals hit. Streak multiplier on the daily total:
-`1 + min(streak, 10) * 0.05` (max 1.5×). Weekend days neither extend nor break a streak.
+Streak = consecutive weekdays with all goals hit. Weekend days neither extend nor break a streak.
+The multiplier on a day's total uses the streak **carried in** from preceding weekdays:
+`1 + min(carried, 10) * 0.05` (max 1.5×). Day N of a run is scored at N-1 steps, so a lone
+perfect day earns no multiplier and consistency is what pays.
 
 Weekly score = sum of daily totals Mon–Sun. Ties broken by streak, then by goals-hit days.
 
