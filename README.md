@@ -1,9 +1,74 @@
 # Stretch Goal
 
-Menu bar app for macOS 26+ that nudges you to move, drink water, stretch and rest your eyes,
-with a weekly team leaderboard synced through a shared OneDrive folder. See `docs/SPEC.md`.
+A macOS menu bar app that nags you, kindly, to take care of yourself while you work: get up,
+stretch, drink water, rest your eyes. It scores your day, keeps a streak, and soon will sync a
+weekly leaderboard with the rest of the team through our shared OneDrive.
 
-## Build
+Requires **macOS 26 (Tahoe) or later**.
+
+## Install
+
+### Homebrew (recommended)
+
+```bash
+brew install --cask --no-quarantine tommy-car-wash-systems-software/tap/stretch-goal
+```
+
+`--no-quarantine` matters: the app is signed but not notarized with a paid Apple Developer ID,
+so without it macOS will refuse to open it. Updates later are just `brew upgrade`.
+
+### Manual
+
+1. Download `StretchGoal-<version>.zip` from the [latest release](../../releases/latest).
+2. Unzip and drag **Stretch Goal.app** into `/Applications`.
+3. First launch: macOS will say it "could not verify" the app. Open **System Settings →
+   Privacy & Security**, scroll down, and click **Open Anyway**. You only do this once.
+
+Then look for the walking figure in your menu bar. Turn on **Launch at login** in Settings so
+it is always there.
+
+## What it does
+
+- **Sitting timer.** Detects keyboard and mouse activity. Idle for 3 minutes, or lock the
+  screen, and your sit ends. Sit 20+ minutes before that and it counts as an earned break.
+- **Nudges.** After 45 minutes of sitting (adjustable) a card slides in under your menu bar on
+  every screen with one-click breaks. Too easy to ignore? Switch to the full-screen style in
+  Settings. Repeats every 15 minutes until you actually move.
+- **Guided breaks.** Move (3 min walk), Stretch (8 desk stretches, 4 min), Breathe (box
+  breathing, 2 min), Eye rest (20 s). Only completed sessions count.
+- **Water.** Tap 250 ml or 500 ml. Undo if you fat-fingered it.
+- **Daily goals.** 6 breaks, 8 drinks, 2 mindful sessions. Hit all three for a bonus, hit them
+  on consecutive weekdays for a streak multiplier. Weekends don't count for or against you.
+- **History.** Last 30 days in a table.
+
+### Scoring
+
+| Action | Points | Daily goal | Daily cap |
+|---|---|---|---|
+| Break (detected or completed Move/Stretch) | 10 | 6 | 8 |
+| Water | 3 | 8 | 10 |
+| Mindful (completed Breathe/Eye rest) | 8 | 2 | 4 |
+| All three goals hit | +25 | | |
+
+Streak multiplier: +5% per consecutive perfect weekday carried into today, max +50%. Caps are
+there so nobody wins by clicking the water button 400 times.
+
+## Privacy
+
+Everything is stored locally in `~/Library/Application Support/Stretch Goal/`. Nothing leaves
+your Mac yet. When the team leaderboard ships, only daily totals (breaks, drinks, mindful
+sessions, active time) will be shared, sharing will be opt-in, and you pick your nickname. Raw
+activity timelines never leave the machine.
+
+## Roadmap
+
+1. ~~Local tracker~~ (this release)
+2. Team leaderboard synced via the shared OneDrive library, one file per person so nobody
+   overwrites anybody.
+3. If it takes off: proper backend, iOS and watch apps on the same core package, Windows and
+   Android clients.
+
+## Development
 
 ```bash
 brew install xcodegen
@@ -11,8 +76,17 @@ xcodegen generate
 open StretchGoal.xcodeproj
 ```
 
-Core logic and tests live in `Packages/StretchGoalCore`:
+Core logic (scoring, streaks, tracker state machine, sync format) is a pure Swift package with
+no AppKit dependency so it can be reused on other platforms:
 
 ```bash
 cd Packages/StretchGoalCore && swift test
 ```
+
+Cut a release with `scripts/release.sh` (needs a checkout of the tap at `../homebrew-tap`).
+Design notes and the sync protocol are in [docs/SPEC.md](docs/SPEC.md).
+
+## Why
+
+We are good at closing tickets and bad at standing up. Built by Brian Phillips as a side
+project for the software team. Suggestions and PRs welcome.

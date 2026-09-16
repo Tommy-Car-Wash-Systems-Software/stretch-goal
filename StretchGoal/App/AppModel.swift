@@ -162,7 +162,7 @@ final class AppModel {
 
     private func observeDebugTriggers() {
         debugObserver = DistributedNotificationCenter.default().addObserver(
-            forName: Notification.Name("com.brianp.StretchGoal.debug.nudge"), object: nil, queue: .main
+            forName: Notification.Name("com.tommycarwash.StretchGoal.debug.nudge"), object: nil, queue: .main
         ) { [weak self] _ in
             MainActor.assumeIsolated { self?.previewNudge() }
         }

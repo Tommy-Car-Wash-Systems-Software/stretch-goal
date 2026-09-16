@@ -1,6 +1,6 @@
 name: StretchGoal
 options:
-  bundleIdPrefix: com.brianp
+  bundleIdPrefix: com.tommycarwash
   createIntermediateGroups: true
   deploymentTarget:
     macOS: "26.0"
@@ -36,11 +36,11 @@ targets:
         LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
         NSHumanReadableCopyright: ""
         CFBundleURLTypes:
-          - CFBundleURLName: com.brianp.StretchGoal
+          - CFBundleURLName: com.tommycarwash.StretchGoal
             CFBundleURLSchemes: [stretchgoal]
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.brianp.StretchGoal
+        PRODUCT_BUNDLE_IDENTIFIER: com.tommycarwash.StretchGoal
         PRODUCT_NAME: Stretch Goal
         GENERATE_INFOPLIST_FILE: NO
         COMBINE_HIDPI_IMAGES: YES

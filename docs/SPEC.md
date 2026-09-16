@@ -3,7 +3,7 @@
 Desk-wellness menu bar app for macOS with a friendly team leaderboard synced through a shared
 OneDrive/SharePoint folder. Personal project by Brian Phillips; no company build infrastructure.
 
-Working name: **Stretch Goal** (dev pun, reads fine company-wide). Bundle id `com.brianp.StretchGoal`.
+Working name: **Stretch Goal** (dev pun, reads fine company-wide). Bundle id `com.tommycarwash.StretchGoal`.
 Rename is a one-line change in `project.yml` until the first release ships.
 
 ---
@@ -178,10 +178,12 @@ stretch-goal/
 - Ad-hoc codesign for MVP. Users approve once in System Settings → Privacy & Security on first
   launch. Documented in README. Developer ID + notarization only if a personal Apple Developer
   membership is worth $99 later.
-- Publish zips as GitHub Releases on a **personal** GitHub account (current `gh` login is the
-  company account `brianp-tommycarwash`; switch or add a personal one before first release).
-- Homebrew tap `homebrew-stretch-goal` with a cask so install is
-  `brew install --cask --no-quarantine <tap>/stretch-goal` and updates are `brew upgrade`.
+- Repo `Tommy-Car-Wash-Systems-Software/stretch-goal`; zips published as GitHub Releases by
+  `scripts/release.sh` (decision 2026-09-16: company org is fine, company CI is not).
+- Homebrew tap `Tommy-Car-Wash-Systems-Software/homebrew-tap` with cask `stretch-goal`, so
+  install is `brew install --cask --no-quarantine tommy-car-wash-systems-software/tap/stretch-goal`
+  and updates are `brew upgrade`. Casks download with plain curl, so the release repo must be
+  public for brew to work; a private repo still supports manual download from the Releases page.
 
 ## 9. Phases
 
