@@ -90,7 +90,7 @@ final class NudgePresenter {
         if fullScreen {
             frame = screen.frame
         } else {
-            let size = NSSize(width: 440, height: 132)
+            let size = NSSize(width: 490, height: 132)
             let visible = screen.visibleFrame
             frame = NSRect(x: visible.maxX - size.width - 16, y: visible.maxY - size.height - 12, width: size.width, height: size.height)
         }
@@ -136,7 +136,7 @@ struct CelebrationView: View {
             Spacer(minLength: 0)
         }
         .padding(16)
-        .frame(width: 440, height: 132, alignment: .leading)
+        .frame(width: 490, height: 132, alignment: .leading)
         .background(.regularMaterial, in: .rect(cornerRadius: 16))
         .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(tint.opacity(0.35)))
         .contentShape(.rect)
@@ -176,7 +176,7 @@ struct NudgeView: View {
             }
         }
         .padding(16)
-        .frame(width: 440, height: 132, alignment: .leading)
+        .frame(width: 490, height: 132, alignment: .leading)
         .background(.regularMaterial, in: .rect(cornerRadius: 16))
         .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(.white.opacity(0.12)))
     }
