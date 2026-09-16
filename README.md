@@ -11,11 +11,14 @@ Requires **macOS 26 (Tahoe) or later**.
 ### Homebrew (recommended)
 
 ```bash
-brew install --cask --no-quarantine tommy-car-wash-systems-software/tap/stretch-goal
+brew tap tommy-car-wash-systems-software/tap
+brew trust tommy-car-wash-systems-software/tap
+brew install --cask --no-quarantine stretch-goal
 ```
 
-`--no-quarantine` matters: the app is signed but not notarized with a paid Apple Developer ID,
-so without it macOS will refuse to open it. Updates later are just `brew upgrade`.
+`brew trust` is a one-time step recent Homebrew requires for third-party taps. `--no-quarantine`
+matters: the app is signed but not notarized with a paid Apple Developer ID, so without it macOS
+will refuse to open it. Updates later are just `brew upgrade`.
 
 ### Manual
 
