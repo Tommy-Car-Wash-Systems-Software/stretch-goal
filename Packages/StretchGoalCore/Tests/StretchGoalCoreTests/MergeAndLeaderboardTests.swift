@@ -34,7 +34,7 @@ import Foundation
         ]
         let summaries = [
             Fixtures.perfect("2026-09-14", member: "a"), Fixtures.perfect("2026-09-15", member: "a"), Fixtures.perfect("2026-09-16", member: "a"),
-            Fixtures.summary("2026-09-16", member: "b", breaks: 12, water: 12, mindful: 4),
+            Fixtures.summary("2026-09-16", member: "b", breaks: 12, water: 8, mindful: 4),
             Fixtures.summary("2026-09-16", member: "c", breaks: 1),
         ]
         let board = Leaderboard.compute(week: week, today: today, profiles: profiles, summaries: summaries, calendar: cal)
@@ -45,7 +45,7 @@ import Foundation
         #expect(board[0].streak == 3)
         #expect(board[0].goalDays == 3)
         #expect(board[0].goalsMetToday)
-        #expect(board[1].points == 120 + 36 + 32 + 25)
+        #expect(board[1].points == 120 + 24 + 32 + 25)
         #expect(board[2].points == 10)
         #expect(!board[2].goalsMetToday)
     }

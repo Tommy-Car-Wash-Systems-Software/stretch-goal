@@ -14,7 +14,7 @@ import Testing
     @Test func capsStopSpamming() {
         let s = Fixtures.summary("2026-09-16", breaks: 50, water: 500, mindful: 40)
         let score = Score.daily(s, streak: 0)
-        #expect(score.base == 12 * 10 + 12 * 3 + 4 * 8)
+        #expect(score.base == 12 * 10 + 8 * 3 + 4 * 8)
     }
 
     @Test func allGoalsBonusAndStreakMultiplier() {

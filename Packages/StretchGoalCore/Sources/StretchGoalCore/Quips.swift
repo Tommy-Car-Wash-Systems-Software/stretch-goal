@@ -80,6 +80,24 @@ public enum Quips {
         pick(["2 litres. Hydrated royalty.", "Water goal hit. Moisturized. Unbothered. In your lane.", "Hydrate or diedrate. You chose hydrate. Slay."], seed: seed)
     }
 
+    public static func waterDailyLimit(seed: Int) -> String {
+        pick(["2 litres logged. that's the recommendation. more isn't healthier, bestie.", "you're at 2 L. hydration: complete. kidneys: thriving. stop.", "daily water done. the rest is just a hobby."], seed: seed)
+    }
+
+    public static func waterTooFast(seed: Int) -> String {
+        pick(["slow down. that's not how kidneys work.", "750 ml per half hour, max. hydration isn't a speedrun.", "we love the enthusiasm. the leaderboard does not accept chugging."], seed: seed)
+    }
+
+    public static func sessionFailed(_ kind: SessionKind, seed: Int) -> String {
+        let pool: [String] = switch kind {
+        case .move: ["you're still typing. that's not a walk.", "hands on the keyboard the whole time. the walk didn't happen. no credit."]
+        case .stretch: ["stretching doesn't involve this much typing. try again.", "the keyboard was very involved in that stretch. no credit."]
+        case .breathe: ["breathing and replying to Teams at the same time doesn't count.", "hands off the keyboard. that's the whole exercise."]
+        case .eyeRest: ["you looked at the screen. that's the one thing.", "20 feet away means not the monitor. no credit."]
+        }
+        return pick(pool, seed: seed)
+    }
+
     public static func eyeGoalHit(seed: Int) -> String {
         pick(["4 eye rests. 20-20-20 understood the assignment.", "Eyes rested 4 times. Screen: humbled.", "Eye goal hit. Vision: main character."], seed: seed)
     }

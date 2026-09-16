@@ -103,7 +103,7 @@ import Foundation
         #expect(rules.water.goalMet(2000))
         #expect(!rules.water.goalMet(1999))
         var c = Fixtures.summary("2026-09-16"); c.waterMl = 10_000
-        #expect(Score.daily(c, streak: 0).base == 12 * 3)
+        #expect(Score.daily(c, streak: 0).base == 8 * 3)  // capped at the 2 L recommendation
     }
 
     @Test func eyeRestsScoreSeparatelyAndDoNotGateAllGoals() {
@@ -118,5 +118,76 @@ import Foundation
     @Test func hourlyBreaksIsTheGoal() {
         #expect(rules.breaks.goal == 8)
         #expect(rules.breaks.cap == 12)
+    }
+}
+
+@Suite struct AntiCheatTests {
+    let rules = ScoringRules.standard
+
+    @Test func waterStopsAtTheRecommendation() {
+        #expect(rules.water.check(adding: 250, total: 1750, recentMl: 0) == .ok)
+        #expect(rules.water.check(adding: 500, total: 1750, recentMl: 0) == .dailyLimit)
+        #expect(rules.water.check(adding: 250, total: 2000, recentMl: 0) == .dailyLimit)
+    }
+
+    @Test func waterBurstLimit() {
+        #expect(rules.water.check(adding: 500, total: 0, recentMl: 250) == .ok)
+        #expect(rules.water.check(adding: 500, total: 0, recentMl: 500) == .tooFast)
+        #expect(rules.water.check(adding: 250, total: 0, recentMl: 500) == .ok)
+    }
+
+    @Test func recentWaterWindow() {
+        let now = Date(timeIntervalSince1970: 10_000)
+        var day = LocalDay(summary: Fixtures.summary("2026-09-16"))
+        day.waterEntries = [
+            WaterEntry(ml: 500, at: now.addingTimeInterval(-29 * 60)),
+            WaterEntry(ml: 500, at: now.addingTimeInterval(-31 * 60)),
+        ]
+        #expect(day.waterMl(within: 30 * 60, before: now) == 500)
+        #expect(day.waterMl == 1000)
+    }
+
+    @Test func legacyUntimestampedWaterDoesNotTripBurst() throws {
+        let json = Data("""
+        {"summary":{"schemaVersion":1,"memberId":"x","deviceId":"y","date":"2026-09-16","timeZone":"UTC",
+          "breaks":0,"waterTaps":0,"mindful":0,"activeSeconds":0,"longestSitSeconds":0,"updatedAt":"2026-09-16T15:00:00Z"},
+         "tracker":{"activeSeconds":0,"longestSitSeconds":0,"detectedBreaks":0},
+         "waterEntriesMl":[250,500],"completedSessions":[]}
+        """.utf8)
+        let day = try Codec.decode(LocalDay.self, from: json)
+        #expect(day.waterMl == 750)
+        #expect(day.waterMl(within: 30 * 60, before: Date(timeIntervalSince1970: 1_800_000_000)) == 0)
+    }
+
+    @Test func stepsClamp() {
+        #expect(rules.steps.clamp(-5) == 0)
+        #expect(rules.steps.clamp(200_000) == 30_000)
+        var s = Fixtures.summary("2026-09-16"); s.steps = rules.steps.clamp(200_000)
+        #expect(Score.daily(s, streak: 0).base == 30)
+    }
+
+    @Test func sessionsTolerateOnlyBriefInput() {
+        #expect(SessionKind.move.allowedActiveSeconds == 10)
+        #expect(SessionKind.eyeRest.allowedActiveSeconds == 3)
+        #expect(SessionKind.allCases.allSatisfy { $0.allowedActiveSeconds < Double(GuidedSession.standard($0).totalSeconds) })
+    }
+
+    @Test func totalIsExactlyTheSumOfParts() {
+        var s = Fixtures.summary("2026-09-16", breaks: 5, water: 6, mindful: 1)
+        s.eyeRests = 3; s.steps = 6400
+        let score = Score.daily(s, streak: 4)
+        #expect(score.parts.map(\.points) == [50, 18, 8, 6, 12])
+        #expect(score.base == 94)
+        #expect(score.bonus == 0)
+        #expect(score.multiplierPercent == 120)
+        #expect(score.total == 94 * 120 / 100)
+    }
+
+    @Test func maximumPossibleDay() {
+        var s = Fixtures.summary("2026-09-16", breaks: 99, water: 99, mindful: 99)
+        s.eyeRests = 99; s.steps = 99_999
+        let score = Score.daily(s, streak: 99)
+        #expect(score.base == 120 + 24 + 32 + 24 + 30)
+        #expect(score.total == (230 + 25) * 150 / 100)
     }
 }

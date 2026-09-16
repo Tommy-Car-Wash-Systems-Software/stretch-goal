@@ -34,6 +34,7 @@ final class AppModel {
         pastDays = Dictionary(uniqueKeysWithValues: store.loadRecent(limit: 60, excluding: today).map { ($0.date, $0.summary) })
 
         sessions.onComplete = { [weak self] kind in self?.complete(kind) }
+        sessions.idleSeconds = { ActivityMonitor.idleSeconds() }
         monitor = ActivityMonitor { [weak self] idle, locked in self?.sample(idleSeconds: idle, locked: locked) }
         Task { await notifier.requestAuthorization() }
         #if DEBUG
@@ -76,21 +77,50 @@ final class AppModel {
 
     // MARK: Actions
 
-    func logWater(ml: Int) {
-        day.waterEntriesMl.append(ml)
-        commit()
+    /// Short-lived message shown under the water row when a log is refused.
+    private(set) var waterNotice: String?
+    private var noticeTask: Task<Void, Never>?
+
+    var waterAtLimit: Bool { day.summary.waterMl >= rules.water.capMl }
+
+    @discardableResult
+    func logWater(ml: Int) -> ScoringRules.WaterCategory.LogCheck {
+        let now = Date.now
+        rolloverIfNeeded(now)
+        let recent = day.waterMl(within: rules.water.burstWindow, before: now)
+        let check = rules.water.check(adding: ml, total: day.waterMl, recentMl: recent)
+        switch check {
+        case .ok:
+            day.waterEntries.append(WaterEntry(ml: ml, at: now))
+            commit(now: now)
+        case .dailyLimit:
+            showNotice(Quips.waterDailyLimit(seed: daySeed))
+        case .tooFast:
+            showNotice(Quips.waterTooFast(seed: daySeed + day.waterEntries.count))
+        }
+        return check
     }
 
     func undoWater() {
-        guard !day.waterEntriesMl.isEmpty else { return }
-        day.waterEntriesMl.removeLast()
+        guard !day.waterEntries.isEmpty else { return }
+        day.waterEntries.removeLast()
         commit()
+    }
+
+    private func showNotice(_ text: String) {
+        waterNotice = text
+        noticeTask?.cancel()
+        noticeTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(4))
+            guard !Task.isCancelled else { return }
+            self?.waterNotice = nil
+        }
     }
 
     /// Replace today's total, as read off a phone or watch.
     func setSteps(_ total: Int) {
         rolloverIfNeeded(.now)
-        day.summary.steps = max(0, min(total, 200_000))
+        day.summary.steps = rules.steps.clamp(total)
         commit()
     }
 

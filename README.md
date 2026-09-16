@@ -50,7 +50,7 @@ it is always there.
 - **Guided breaks.** Move (3 min walk), Stretch (8 desk stretches, 4 min), Breathe (box
   breathing, 2 min), Eye rest (20 s, the 20-20-20 rule). Only completed sessions count.
 - **Water.** Tap 250 ml (a glass) or 500 ml (a bottle). Scored by volume: one drop per 250 ml,
-  so 500 ml fills two. Undo if you fat-fingered it.
+  so 500 ml fills two. Stops at 2 L. Undo if you fat-fingered it.
 - **Steps.** Log today's total off your phone or watch, or quick-add a walk. Milestones come
   with unhinged unit conversions (desk-to-Keurig runs, laps of the wash tunnel). Steps score
   and will have their own leaderboard column, but they don't gate the all-goals bonus, so
@@ -69,7 +69,7 @@ it is always there.
 | Action | Points | Daily goal | Daily cap |
 |---|---|---|---|
 | Break (20+ min sit ended by 3+ min away, or completed Move/Stretch) | 10 | 8 | 12 |
-| Water, per 250 ml glass | 3 | 2,000 ml | 3,000 ml |
+| Water, per 250 ml glass | 3 | 2,000 ml | 2,000 ml |
 | Mindful (completed Breathe) | 8 | 2 | 4 |
 | Eye rest (completed 20 s) | 2 | 4 | 12 |
 | Steps, per 1,000 | 2 | 8,000 | 15,000 |
@@ -87,7 +87,8 @@ This is a health app, so the targets follow commonly cited guidance rather than 
   seated and 3+ minutes away, so idle flapping can't farm it.
 - **Water, 2,000 ml.** The "eight 8-oz glasses" heuristic, and inside the 2.0 to 2.5 L per day
   from beverages that EFSA and the US Institute of Medicine describe as adequate for adults.
-  Coffee and tea count. The cap at 3 L is because more is not a health target.
+  Coffee and tea count. Logging stops at 2 L: more is not a health target, so the app won't
+  record it.
 - **Breathing, 2 × 2 min.** Short daily breathwork of a few minutes shows measurable mood and
   stress effects in controlled studies; box breathing at 4-4-4-4 is the simplest version.
 - **Eye rests, 4/day.** Optometry's 20-20-20 rule: every 20 minutes, look 20 feet away for 20
@@ -96,6 +97,21 @@ This is a health app, so the targets follow commonly cited guidance rather than 
   8,000 to 10,000 steps for adults under 60 and 6,000 to 8,000 over 60.
 
 If you have better sources, open an issue. The rules live in one struct, `ScoringRules`.
+
+### Nobody cheats
+
+This is a competition, so every input has a guard:
+
+- **Water** stops at the 2 L recommendation and refuses more than 750 ml in any 30 minutes.
+  Nobody drinks two litres in a minute.
+- **Guided breaks** watch your keyboard and mouse. Keep typing during a Move and it fails
+  with no credit: 10 seconds of input tolerated for Move, 30 for Stretch, 15 for Breathe,
+  3 for Eye rest. Only completed, clean sessions score.
+- **Detected breaks** need a 20-minute sit ended by 3+ minutes away, and a completed Move or
+  Stretch consumes the current sit so it can't be credited twice.
+- **Steps** are honor-system by nature, but entries clamp at 30,000 and only 15,000 score.
+- **Points** are recomputed from raw counts by every reader, never trusted from a file, and
+  every count is capped. Hover the points total for the exact arithmetic.
 
 ## Privacy
 

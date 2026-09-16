@@ -45,6 +45,7 @@ struct MenuBarView: View {
                     Text(status.headline).font(.headline).contentTransition(.numericText())
                     Spacer()
                     Text("\(model.score.total) pts").font(.headline.monospacedDigit())
+                        .help(pointsBreakdown)
                 }
                 Text(status.quip).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 Label(Quips.streak(model.streak), systemImage: model.streak > 0 ? "flame.fill" : "flame")
@@ -52,6 +53,15 @@ struct MenuBarView: View {
                     .lineLimit(1)
             }
         }
+    }
+
+    private var pointsBreakdown: String {
+        let score = model.score
+        var lines = score.parts.map { "\($0.name): \($0.points)" }
+        lines.append("All goals bonus: \(score.bonus)")
+        lines.append("Streak multiplier: ×\(Double(score.multiplierPercent) / 100)")
+        lines.append("Total: (\(score.base) + \(score.bonus)) × \(score.multiplierPercent)% = \(score.total)")
+        return lines.joined(separator: "\n")
     }
 
     private var goals: some View {
@@ -84,6 +94,19 @@ struct MenuBarView: View {
     }
 
     private var water: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            waterRow
+            if let notice = model.waterNotice {
+                Text(notice).font(.caption2).foregroundStyle(.orange).lineLimit(2)
+                    .transition(.opacity)
+            } else if model.waterAtLimit {
+                Text("2 L logged. that's the recommendation for the day.").font(.caption2).foregroundStyle(.tertiary)
+            }
+        }
+        .animation(.default, value: model.waterNotice)
+    }
+
+    private var waterRow: some View {
         HStack(spacing: 8) {
             let glasses = model.rules.water.glasses(model.day.summary.waterMl)
             HStack(spacing: 3) {
@@ -92,17 +115,14 @@ struct MenuBarView: View {
                         .foregroundStyle(i < glasses ? .blue : .secondary)
                         .font(.caption)
                 }
-                if glasses > model.rules.water.goalGlasses {
-                    Text("+\(glasses - model.rules.water.goalGlasses)").font(.caption2).foregroundStyle(.blue)
-                }
             }
             .help("one drop per 250 ml glass. 500 ml fills two.")
             Spacer()
             Button { model.undoWater() } label: { Image(systemName: "minus") }
-                .disabled(model.day.waterEntriesMl.isEmpty)
+                .disabled(model.day.waterEntries.isEmpty)
                 .help("Undo last drink")
-            Button("250 ml") { model.logWater(ml: 250) }.help("a glass")
-            Button("500 ml") { model.logWater(ml: 500) }.help("a bottle")
+            Button("250 ml") { model.logWater(ml: 250) }.help("a glass").disabled(model.waterAtLimit)
+            Button("500 ml") { model.logWater(ml: 500) }.help("a bottle").disabled(model.waterAtLimit)
         }
         .controlSize(.small)
     }

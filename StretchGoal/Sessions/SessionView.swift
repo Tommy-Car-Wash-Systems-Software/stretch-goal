@@ -15,6 +15,8 @@ struct SessionView: View {
                 running(session, elapsed: runner.elapsed)
             case let .finished(session):
                 finished(session)
+            case let .failed(session):
+                failed(session)
             }
         }
         .frame(width: 360, height: 380)
@@ -76,6 +78,11 @@ struct SessionView: View {
                 }
             }
             Spacer()
+            if model.sessions.activeSeconds > 0 {
+                Label("hands off the keyboard: \(Int(model.sessions.allowedActiveSeconds - model.sessions.activeSeconds))s of typing left before this doesn't count",
+                      systemImage: "keyboard")
+                    .font(.caption2).foregroundStyle(.orange).lineLimit(2).multilineTextAlignment(.center)
+            }
             ProgressView(value: Double(elapsed), total: Double(session.totalSeconds))
             Button("Cancel", role: .cancel) {
                 model.sessions.cancel()
@@ -116,6 +123,27 @@ struct SessionView: View {
                 dismissWindow(id: WindowID.session)
             }
             .keyboardShortcut(.defaultAction)
+        }
+        .padding(24)
+    }
+
+    private func failed(_ session: GuidedSession) -> some View {
+        VStack(spacing: 12) {
+            Image(systemName: "xmark.circle.fill").font(.system(size: 48)).foregroundStyle(.red)
+            Text("\(session.title) didn't count").font(.title2.bold())
+            Text(Quips.sessionFailed(session.kind, seed: Int(Date.now.timeIntervalSince1970 / 60)))
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+            HStack {
+                Button("Close") {
+                    model.sessions.cancel()
+                    dismissWindow(id: WindowID.session)
+                }
+                .keyboardShortcut(.cancelAction)
+                Button("Try again") { model.start(session.kind) }
+                    .keyboardShortcut(.defaultAction)
+            }
         }
         .padding(24)
     }

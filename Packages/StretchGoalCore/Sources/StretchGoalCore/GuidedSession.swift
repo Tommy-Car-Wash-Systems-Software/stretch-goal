@@ -14,6 +14,17 @@ public enum SessionKind: String, CaseIterable, Codable, Sendable, Identifiable {
         case .eyeRest: .eyeRest
         }
     }
+
+    /// Seconds of keyboard/mouse input tolerated during the session before it fails.
+    /// You cannot walk, stretch, breathe, or look away while typing.
+    public var allowedActiveSeconds: Double {
+        switch self {
+        case .move: 10
+        case .stretch: 30
+        case .breathe: 15
+        case .eyeRest: 3
+        }
+    }
 }
 
 public struct SessionStep: Hashable, Sendable {

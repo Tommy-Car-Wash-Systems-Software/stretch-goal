@@ -146,7 +146,7 @@ import Foundation
         var day = LocalDay(summary: Fixtures.summary("2026-09-16"))
         day.tracker.detectedBreaks = 2
         day.completedSessions = [.move, .breathe, .stretch, .eyeRest, .eyeRest]
-        day.waterEntriesMl = [250, 500, 250]
+        day.waterEntries = [250, 500, 250].map { WaterEntry(ml: $0, at: Date(timeIntervalSince1970: 0)) }
         day.tracker.activeSeconds = 1000
         day.tracker.longestSitSeconds = 900
         day.tracker.sitStart = Date(timeIntervalSince1970: 0)

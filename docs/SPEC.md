@@ -76,7 +76,7 @@ Per day, all counts capped so spamming cannot win.
 | Action | Points | Daily goal | Daily cap |
 |---|---|---|---|
 | Break (detected, or completed Move/Stretch) | 10 | 8 | 12 |
-| Water, per 250 ml glass (synced as `waterMl`) | 3 | 2,000 ml | 3,000 ml |
+| Water, per 250 ml glass (synced as `waterMl`) | 3 | 2,000 ml | 2,000 ml (logging stops; 750 ml / 30 min burst limit) |
 | Mindful (completed Breathe) | 8 | 2 | 4 |
 | Eye rest (completed 20 s) | 2 | 4 | 12 |
 | Steps (per 1,000, manual entry) | 2 | 8,000 | 15,000 |
