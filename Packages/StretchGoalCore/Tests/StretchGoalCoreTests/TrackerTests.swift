@@ -137,7 +137,7 @@ import Foundation
         #expect(SessionKind.move.credit == .breakTaken)
         #expect(SessionKind.stretch.credit == .breakTaken)
         #expect(SessionKind.breathe.credit == .mindful)
-        #expect(SessionKind.eyeRest.credit == .mindful)
+        #expect(SessionKind.eyeRest.credit == .eyeRest)
     }
 }
 
@@ -152,8 +152,9 @@ import Foundation
         day.tracker.sitStart = Date(timeIntervalSince1970: 0)
         day.refreshSummary(now: Date(timeIntervalSince1970: 1500))
         #expect(day.summary.breaks == 4)
-        #expect(day.summary.mindful == 3)
-        #expect(day.summary.waterTaps == 3)
+        #expect(day.summary.mindful == 1)
+        #expect(day.summary.eyeRests == 2)
+        #expect(day.summary.waterMl == 1000)
         #expect(day.waterMl == 1000)
         #expect(day.summary.activeSeconds == 1000)
         #expect(day.summary.longestSitSeconds == 1500)

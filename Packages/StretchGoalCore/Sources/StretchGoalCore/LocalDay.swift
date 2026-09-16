@@ -37,7 +37,8 @@ public struct LocalDay: Codable, Hashable, Sendable {
     public mutating func refreshSummary(now: Date) {
         summary.breaks = tracker.detectedBreaks + completedSessions.filter { $0.credit == .breakTaken }.count
         summary.mindful = completedSessions.filter { $0.credit == .mindful }.count
-        summary.waterTaps = waterEntriesMl.count
+        summary.eyeRests = completedSessions.filter { $0.credit == .eyeRest }.count
+        summary.waterMl = waterMl
         summary.activeSeconds = tracker.activeSeconds
         summary.longestSitSeconds = max(tracker.longestSitSeconds, Int(tracker.currentSit(at: now)))
         summary.updatedAt = now

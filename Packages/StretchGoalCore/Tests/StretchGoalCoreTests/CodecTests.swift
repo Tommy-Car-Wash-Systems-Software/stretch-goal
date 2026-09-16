@@ -10,6 +10,7 @@ import Foundation
         let json = String(decoding: data, as: UTF8.self)
         #expect(json.contains("\"date\" : \"2026-09-16\""))
         #expect(json.contains("\"schemaVersion\" : 1"))
+        #expect(json.contains("\"waterMl\" : 1500"))
         #expect(json.contains("\"updatedAt\" : \"2026-09-1"))
         let decoded = try Codec.decode(DaySummary.self, from: data)
         #expect(decoded == original)

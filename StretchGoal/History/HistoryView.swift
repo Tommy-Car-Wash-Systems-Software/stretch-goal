@@ -10,8 +10,9 @@ struct HistoryView: View {
                 Text(row.day.date().formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()))
             }
             TableColumn("Breaks") { row in Text("\(row.breaks)").monospacedDigit() }.width(60)
-            TableColumn("Water") { row in Text("\(row.water)").monospacedDigit() }.width(60)
+            TableColumn("Water") { row in Text("\(row.water.formatted()) ml").monospacedDigit() }.width(80)
             TableColumn("Mindful") { row in Text("\(row.mindful)").monospacedDigit() }.width(60)
+            TableColumn("Eyes") { row in Text("\(row.eyes)").monospacedDigit() }.width(50)
             TableColumn("Steps") { row in Text(row.steps.formatted()).monospacedDigit() }.width(70)
             TableColumn("Active") { row in Text(MenuBarView.duration(row.active)).monospacedDigit() }.width(70)
             TableColumn("Longest sit") { row in Text(MenuBarView.duration(row.longestSit)).monospacedDigit() }.width(80)
@@ -22,7 +23,7 @@ struct HistoryView: View {
                 }
             }.width(80)
         }
-        .frame(minWidth: 600, minHeight: 300)
+        .frame(minWidth: 680, minHeight: 300)
         .overlay {
             if rows.isEmpty {
                 ContentUnavailableView("History", systemImage: "calendar", description: Text(Quips.historyEmpty))
@@ -32,7 +33,7 @@ struct HistoryView: View {
 
     private struct Row: Identifiable {
         let day: DayKey
-        let breaks: Int, water: Int, mindful: Int, steps: Int, active: Int, longestSit: Int, points: Int
+        let breaks: Int, water: Int, mindful: Int, eyes: Int, steps: Int, active: Int, longestSit: Int, points: Int
         let allGoals: Bool
         var id: DayKey { day }
     }
@@ -41,7 +42,7 @@ struct HistoryView: View {
         let history = model.history
         return model.recentDays.prefix(30).map { s in
             let score = Score.daily(s, streak: Streak.carried(into: s.date, history: history, rules: model.rules), rules: model.rules)
-            return Row(day: s.date, breaks: s.breaks, water: s.waterTaps, mindful: s.mindful, steps: s.steps, active: s.activeSeconds,
+            return Row(day: s.date, breaks: s.breaks, water: s.waterMl, mindful: s.mindful, eyes: s.eyeRests, steps: s.steps, active: s.activeSeconds,
                        longestSit: s.longestSitSeconds, points: score.total, allGoals: score.allGoalsMet)
         }
     }

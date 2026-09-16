@@ -66,7 +66,7 @@ final class AppModel {
             if d > today { return (d, .future) }
             guard let s = history[d] else { return (d, .none) }
             if rules.allGoalsMet(s) { return (d, .complete) }
-            return (d, s.breaks + s.waterTaps + s.mindful > 0 ? .partial : .none)
+            return (d, s.breaks + s.waterMl + s.mindful + s.eyeRests + s.steps > 0 ? .partial : .none)
         }
     }
 
@@ -116,9 +116,14 @@ final class AppModel {
             nudges.celebrate(title: Quips.stepMilestone(milestone, seed: daySeed + milestone), body: body, symbol: "figure.walk.motion", tint: .green)
             return
         }
-        if s.waterTaps == rules.water.goal, !day.celebratedMilestones.contains(-1) {
+        if rules.water.goalMet(s.waterMl), !day.celebratedMilestones.contains(-1) {
             day.celebratedMilestones.append(-1)
-            nudges.celebrate(title: Quips.waterGoalHit(seed: daySeed), body: "\(day.waterMl) ml today.", symbol: "drop.fill", tint: .blue)
+            nudges.celebrate(title: Quips.waterGoalHit(seed: daySeed), body: "\(s.waterMl.formatted()) ml today.", symbol: "drop.fill", tint: .blue)
+            return
+        }
+        if rules.eyeRests.goalMet(s.eyeRests), !day.celebratedMilestones.contains(-2) {
+            day.celebratedMilestones.append(-2)
+            nudges.celebrate(title: Quips.eyeGoalHit(seed: daySeed), body: "every 20 minutes, 20 feet, 20 seconds. you're doing it.", symbol: "eye", tint: .orange)
         }
     }
 

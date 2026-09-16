@@ -77,7 +77,11 @@ public enum Quips {
     // MARK: Water
 
     public static func waterGoalHit(seed: Int) -> String {
-        pick(["8 for 8. Hydrated royalty.", "Water goal hit. Moisturized. Unbothered. In your lane.", "Hydrate or diedrate. You chose hydrate. Slay."], seed: seed)
+        pick(["2 litres. Hydrated royalty.", "Water goal hit. Moisturized. Unbothered. In your lane.", "Hydrate or diedrate. You chose hydrate. Slay."], seed: seed)
+    }
+
+    public static func eyeGoalHit(seed: Int) -> String {
+        pick(["4 eye rests. 20-20-20 understood the assignment.", "Eyes rested 4 times. Screen: humbled.", "Eye goal hit. Vision: main character."], seed: seed)
     }
 
     // MARK: Goals & streaks
@@ -110,9 +114,9 @@ public enum Quips {
 
     public static let units: [Unit] = [
         Unit(stepsEach: 40, singular: "desk-to-Keurig run", plural: "desk-to-Keurig runs"),
-        Unit(stepsEach: 55, singular: "lap of the wash tunnel", plural: "laps of the wash tunnel"),
+        Unit(stepsEach: 110, singular: "lap of the wash tunnel", plural: "laps of the wash tunnel"),
         Unit(stepsEach: 260, singular: "trip to the far bathroom you never use", plural: "trips to the far bathroom you never use"),
-        Unit(stepsEach: 2000, singular: "actual mile", plural: "actual miles"),
+        Unit(stepsEach: 2100, singular: "actual mile", plural: "actual miles"),
         Unit(stepsEach: 700, singular: "parking-lot crossing when you parked far to feel something", plural: "parking-lot crossings when you parked far to feel something"),
     ]
 
@@ -132,6 +136,6 @@ public enum Quips {
     }
 
     public static func stepsGoalHit(seed: Int) -> String {
-        pick(["Step goal hit. Chronically optimized.", "7,000 steps. Bodying the leaderboard.", "Steps: done. Desk-rot: cancelled."], seed: seed)
+        pick(["Step goal hit. Chronically optimized.", "8,000 steps. Bodying the leaderboard.", "Steps: done. Desk-rot: cancelled."], seed: seed)
     }
 }

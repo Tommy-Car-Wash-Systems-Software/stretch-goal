@@ -5,7 +5,7 @@ import Testing
     @Test func basePointsPerCategory() {
         let s = Fixtures.summary("2026-09-16", breaks: 2, water: 3, mindful: 1)
         let score = Score.daily(s, streak: 0)
-        #expect(score.base == 2 * 10 + 3 * 3 + 1 * 8)
+        #expect(score.base == 2 * 10 + 3 * 3 + 1 * 8)  // water: 3 glasses × 3
         #expect(score.bonus == 0)
         #expect(score.total == 37)
         #expect(!score.allGoalsMet)
@@ -14,7 +14,7 @@ import Testing
     @Test func capsStopSpamming() {
         let s = Fixtures.summary("2026-09-16", breaks: 50, water: 500, mindful: 40)
         let score = Score.daily(s, streak: 0)
-        #expect(score.base == 8 * 10 + 10 * 3 + 4 * 8)
+        #expect(score.base == 12 * 10 + 12 * 3 + 4 * 8)
     }
 
     @Test func allGoalsBonusAndStreakMultiplier() {
@@ -22,12 +22,12 @@ import Testing
         let noStreak = Score.daily(s, streak: 0)
         #expect(noStreak.allGoalsMet)
         #expect(noStreak.bonus == 25)
-        #expect(noStreak.base == 60 + 24 + 16)
-        #expect(noStreak.total == 125)
+        #expect(noStreak.base == 80 + 24 + 16)
+        #expect(noStreak.total == 145)
 
         let streak3 = Score.daily(s, streak: 3)
         #expect(streak3.multiplierPercent == 115)
-        #expect(streak3.total == 125 * 115 / 100)
+        #expect(streak3.total == 145 * 115 / 100)
 
         let capped = Score.daily(s, streak: 40)
         #expect(capped.multiplierPercent == 150)

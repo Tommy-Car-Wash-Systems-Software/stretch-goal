@@ -16,7 +16,7 @@ struct MenuBarView: View {
                 RingsView(
                     progress: [
                         Double(model.day.summary.breaks) / Double(model.rules.breaks.goal),
-                        Double(model.day.summary.waterTaps) / Double(model.rules.water.goal),
+                        Double(model.day.summary.waterMl) / Double(model.rules.water.goalMl),
                         Double(model.day.summary.mindful) / Double(model.rules.mindful.goal),
                     ],
                     colors: [.green, .blue, .purple]
@@ -56,9 +56,10 @@ struct MenuBarView: View {
 
     private var goals: some View {
         Grid(alignment: .leading, horizontalSpacing: 8, verticalSpacing: 6) {
-            goalRow("figure.walk", .green, "Breaks", model.day.summary.breaks, model.rules.breaks.goal)
-            goalRow("drop.fill", .blue, "Water", model.day.summary.waterTaps, model.rules.water.goal)
-            goalRow("wind", .purple, "Mindful", model.day.summary.mindful, model.rules.mindful.goal)
+            goalRow("figure.walk", .green, "Breaks", "\(model.day.summary.breaks)/\(model.rules.breaks.goal)", model.rules.breaks.goalMet(model.day.summary.breaks))
+            goalRow("drop.fill", .blue, "Water", "\(model.day.summary.waterMl.formatted())/\(model.rules.water.goalMl.formatted()) ml", model.rules.water.goalMet(model.day.summary.waterMl))
+            goalRow("wind", .purple, "Mindful", "\(model.day.summary.mindful)/\(model.rules.mindful.goal)", model.rules.mindful.goalMet(model.day.summary.mindful))
+            goalRow("eye", .orange, "Eye rests", "\(model.day.summary.eyeRests)/\(model.rules.eyeRests.goal)", model.rules.eyeRests.goalMet(model.day.summary.eyeRests))
             Divider().gridCellUnsizedAxes(.horizontal)
             GridRow {
                 Label("Active", systemImage: "clock").foregroundStyle(.secondary)
@@ -72,31 +73,36 @@ struct MenuBarView: View {
         .font(.callout)
     }
 
-    private func goalRow(_ symbol: String, _ color: Color, _ title: String, _ count: Int, _ goal: Int) -> some View {
+    private func goalRow(_ symbol: String, _ color: Color, _ title: String, _ value: String, _ met: Bool) -> some View {
         GridRow {
             Label { Text(title) } icon: { Image(systemName: symbol).foregroundStyle(color) }
-            Text("\(count)/\(goal)")
+            Text(value)
                 .monospacedDigit()
-                .fontWeight(count >= goal ? .semibold : .regular)
-                .foregroundStyle(count >= goal ? color : .primary)
+                .fontWeight(met ? .semibold : .regular)
+                .foregroundStyle(met ? color : .primary)
         }
     }
 
     private var water: some View {
         HStack(spacing: 8) {
+            let glasses = model.rules.water.glasses(model.day.summary.waterMl)
             HStack(spacing: 3) {
-                ForEach(0..<model.rules.water.goal, id: \.self) { i in
-                    Image(systemName: i < model.day.summary.waterTaps ? "drop.fill" : "drop")
-                        .foregroundStyle(i < model.day.summary.waterTaps ? .blue : .secondary)
+                ForEach(0..<model.rules.water.goalGlasses, id: \.self) { i in
+                    Image(systemName: i < glasses ? "drop.fill" : "drop")
+                        .foregroundStyle(i < glasses ? .blue : .secondary)
                         .font(.caption)
                 }
+                if glasses > model.rules.water.goalGlasses {
+                    Text("+\(glasses - model.rules.water.goalGlasses)").font(.caption2).foregroundStyle(.blue)
+                }
             }
+            .help("one drop per 250 ml glass. 500 ml fills two.")
             Spacer()
             Button { model.undoWater() } label: { Image(systemName: "minus") }
                 .disabled(model.day.waterEntriesMl.isEmpty)
                 .help("Undo last drink")
-            Button("250 ml") { model.logWater(ml: 250) }
-            Button("500 ml") { model.logWater(ml: 500) }
+            Button("250 ml") { model.logWater(ml: 250) }.help("a glass")
+            Button("500 ml") { model.logWater(ml: 500) }.help("a bottle")
         }
         .controlSize(.small)
     }

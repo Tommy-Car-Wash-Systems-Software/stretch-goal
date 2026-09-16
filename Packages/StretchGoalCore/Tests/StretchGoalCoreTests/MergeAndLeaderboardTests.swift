@@ -10,7 +10,7 @@ import Foundation
                                  updatedAt: Date(timeIntervalSince1970: 200))
         let m = DaySummary.merge([a, b])!
         #expect(m.breaks == 3)
-        #expect(m.waterTaps == 7)
+        #expect(m.waterMl == 1750)
         #expect(m.mindful == 2)
         #expect(m.deviceId == "desktop")
         #expect(m.updatedAt == Date(timeIntervalSince1970: 200))
@@ -34,18 +34,18 @@ import Foundation
         ]
         let summaries = [
             Fixtures.perfect("2026-09-14", member: "a"), Fixtures.perfect("2026-09-15", member: "a"), Fixtures.perfect("2026-09-16", member: "a"),
-            Fixtures.summary("2026-09-16", member: "b", breaks: 8, water: 10, mindful: 4),
+            Fixtures.summary("2026-09-16", member: "b", breaks: 12, water: 12, mindful: 4),
             Fixtures.summary("2026-09-16", member: "c", breaks: 1),
         ]
         let board = Leaderboard.compute(week: week, today: today, profiles: profiles, summaries: summaries, calendar: cal)
         #expect(board.map(\.nickname) == ["Ada", "Bo", "Cy"])
         #expect(board.map(\.rank) == [1, 2, 3])
-        // Ada: 125 + 125*1.05 + 125*1.10 = 125 + 131 + 137
-        #expect(board[0].points == 125 + 131 + 137)
+        // Ada: 145 + 145*1.05 + 145*1.10 = 145 + 152 + 159
+        #expect(board[0].points == 145 + 152 + 159)
         #expect(board[0].streak == 3)
         #expect(board[0].goalDays == 3)
         #expect(board[0].goalsMetToday)
-        #expect(board[1].points == 80 + 30 + 32 + 25)
+        #expect(board[1].points == 120 + 36 + 32 + 25)
         #expect(board[2].points == 10)
         #expect(!board[2].goalsMetToday)
     }
@@ -64,11 +64,11 @@ import Foundation
 
     @Test func mergesDevicesBeforeScoring() {
         let summaries = [
-            Fixtures.summary("2026-09-16", member: "a", device: "x", breaks: 6),
+            Fixtures.summary("2026-09-16", member: "a", device: "x", breaks: 8),
             Fixtures.summary("2026-09-16", member: "a", device: "y", water: 8, mindful: 2),
         ]
         let board = Leaderboard.compute(week: week, today: today, profiles: [], summaries: summaries, calendar: cal)
-        #expect(board[0].points == 125)
+        #expect(board[0].points == 145)
         #expect(board[0].goalsMetToday)
     }
 

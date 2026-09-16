@@ -36,8 +36,8 @@ Mirrors Brian's current personal app, plus a team tab.
 
 **Menu bar popover**
 - Header: sitting timer ("Sitting for 3h 10m"), today's active time, longest sit.
-- Rings: Breaks x/6, Water x/8, Mindful x/2.
-- Water: tap +250 ml / +500 ml, undo.
+- Rings: Breaks x/8, Water ml/2,000, Mindful x/2. Eye rests and steps as rows.
+- Water: tap +250 ml / +500 ml, undo. Drops fill per 250 ml glass.
 - Take a break: Move (3 min), Breathe (4-4-4-4, 2 min), Stretch (full desk, ~4 min), Eye rest (20 s). Each is a guided countdown sheet. Scoring only on completion.
 - Week strip: dots for each weekday showing goals hit.
 - Today's points and current streak.
@@ -75,11 +75,15 @@ Per day, all counts capped so spamming cannot win.
 
 | Action | Points | Daily goal | Daily cap |
 |---|---|---|---|
-| Break (detected, or completed Move/Stretch) | 10 | 6 | 8 |
-| Water tap (250 or 500 ml = 1 tap) | 3 | 8 | 10 |
-| Mindful (completed Breathe/Eye rest) | 8 | 2 | 4 |
-| Steps (per 1,000, manual entry) | 2 | 7,000 | 15,000 |
-| All three desk goals hit (steps excluded) | +25 bonus | | |
+| Break (detected, or completed Move/Stretch) | 10 | 8 | 12 |
+| Water, per 250 ml glass (synced as `waterMl`) | 3 | 2,000 ml | 3,000 ml |
+| Mindful (completed Breathe) | 8 | 2 | 4 |
+| Eye rest (completed 20 s) | 2 | 4 | 12 |
+| Steps (per 1,000, manual entry) | 2 | 8,000 | 15,000 |
+| Breaks + water + mindful goals hit (steps, eyes excluded) | +25 bonus | | |
+
+Targets follow published guidance (see README "Where the numbers come from"); revised
+2026-09-16 after Brian caught water scoring by tap instead of volume.
 
 Streak = consecutive weekdays with all goals hit. Weekend days neither extend nor break a streak.
 The multiplier on a day's total uses the streak **carried in** from preceding weekdays:
@@ -145,8 +149,9 @@ Stretch Goal/
   "date": "2026-09-16",
   "timeZone": "America/Chicago",
   "breaks": 4,
-  "waterTaps": 6,
+  "waterMl": 1500,
   "mindful": 1,
+  "eyeRests": 3,
   "steps": 8200,
   "activeSeconds": 18420,
   "longestSitSeconds": 5400,

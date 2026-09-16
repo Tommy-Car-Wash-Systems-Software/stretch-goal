@@ -48,15 +48,17 @@ it is always there.
   every screen with one-click breaks. Too easy to ignore? Switch to the full-screen style in
   Settings. Repeats every 15 minutes until you actually move.
 - **Guided breaks.** Move (3 min walk), Stretch (8 desk stretches, 4 min), Breathe (box
-  breathing, 2 min), Eye rest (20 s). Only completed sessions count.
-- **Water.** Tap 250 ml or 500 ml. Undo if you fat-fingered it.
+  breathing, 2 min), Eye rest (20 s, the 20-20-20 rule). Only completed sessions count.
+- **Water.** Tap 250 ml (a glass) or 500 ml (a bottle). Scored by volume: one drop per 250 ml,
+  so 500 ml fills two. Undo if you fat-fingered it.
 - **Steps.** Log today's total off your phone or watch, or quick-add a walk. Milestones come
   with unhinged unit conversions (desk-to-Keurig runs, laps of the wash tunnel). Steps score
   and will have their own leaderboard column, but they don't gate the all-goals bonus, so
   people without a step counter can still streak. Automatic sync needs HealthKit, which
   doesn't exist on macOS; it lands with the iOS app.
-- **Daily goals.** 6 breaks, 8 drinks, 2 mindful sessions. Hit all three for a bonus, hit them
-  on consecutive weekdays for a streak multiplier. Weekends don't count for or against you.
+- **Daily goals.** 8 breaks, 2 litres of water, 2 breathing sessions. Hit all three for a bonus,
+  hit them on consecutive weekdays for a streak multiplier. Weekends don't count for or against
+  you. Steps and eye rests score on top but never gate the bonus.
 - **History.** Last 30 days in a table.
 - **The voice.** Status lines, nudges, and celebrations rotate through a pool of lines in the
   register of [issue #1](../../issues/1). Functional labels stay plain; the flavor is in the
@@ -66,14 +68,34 @@ it is always there.
 
 | Action | Points | Daily goal | Daily cap |
 |---|---|---|---|
-| Break (detected or completed Move/Stretch) | 10 | 6 | 8 |
-| Water | 3 | 8 | 10 |
-| Mindful (completed Breathe/Eye rest) | 8 | 2 | 4 |
-| Steps (per 1,000) | 2 | 7,000 | 15,000 |
-| All three goals hit | +25 | | |
+| Break (20+ min sit ended by 3+ min away, or completed Move/Stretch) | 10 | 8 | 12 |
+| Water, per 250 ml glass | 3 | 2,000 ml | 3,000 ml |
+| Mindful (completed Breathe) | 8 | 2 | 4 |
+| Eye rest (completed 20 s) | 2 | 4 | 12 |
+| Steps, per 1,000 | 2 | 8,000 | 15,000 |
+| Breaks + water + mindful goals all hit | +25 | | |
 
 Streak multiplier: +5% per consecutive perfect weekday carried into today, max +50%. Caps are
 there so nobody wins by clicking the water button 400 times.
+
+### Where the numbers come from
+
+This is a health app, so the targets follow commonly cited guidance rather than vibes:
+
+- **Breaks, 8/day.** Public-health guidance on sedentary time says to break up sitting every
+  30 to 60 minutes. Hourly over an 8-hour workday is 8. A break only counts after 20+ minutes
+  seated and 3+ minutes away, so idle flapping can't farm it.
+- **Water, 2,000 ml.** The "eight 8-oz glasses" heuristic, and inside the 2.0 to 2.5 L per day
+  from beverages that EFSA and the US Institute of Medicine describe as adequate for adults.
+  Coffee and tea count. The cap at 3 L is because more is not a health target.
+- **Breathing, 2 × 2 min.** Short daily breathwork of a few minutes shows measurable mood and
+  stress effects in controlled studies; box breathing at 4-4-4-4 is the simplest version.
+- **Eye rests, 4/day.** Optometry's 20-20-20 rule: every 20 minutes, look 20 feet away for 20
+  seconds. Doing it every 20 minutes all day is ~24; four is the floor we celebrate.
+- **Steps, 8,000.** A 2022 meta-analysis of 15 cohorts found mortality benefit plateauing around
+  8,000 to 10,000 steps for adults under 60 and 6,000 to 8,000 over 60.
+
+If you have better sources, open an issue. The rules live in one struct, `ScoringRules`.
 
 ## Privacy
 

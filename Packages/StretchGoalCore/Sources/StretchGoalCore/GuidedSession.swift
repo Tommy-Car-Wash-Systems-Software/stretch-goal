@@ -5,12 +5,13 @@ public enum SessionKind: String, CaseIterable, Codable, Sendable, Identifiable {
 
     public var id: String { rawValue }
 
-    public enum Credit: Sendable { case breakTaken, mindful }
+    public enum Credit: Sendable { case breakTaken, mindful, eyeRest }
 
     public var credit: Credit {
         switch self {
         case .move, .stretch: .breakTaken
-        case .breathe, .eyeRest: .mindful
+        case .breathe: .mindful
+        case .eyeRest: .eyeRest
         }
     }
 }
