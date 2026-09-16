@@ -1,5 +1,6 @@
 import AppKit
 import UserNotifications
+import StretchGoalCore
 
 @MainActor
 final class Notifier: NSObject, UNUserNotificationCenterDelegate {
@@ -26,8 +27,9 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
 
     func nudge(sitMinutes: Int) {
         let content = UNMutableNotificationContent()
-        content.title = "You've been sitting for \(sitMinutes) min"
-        content.body = "Stand up, stretch, or grab some water. Your streak will thank you."
+        let seed = sitMinutes + Int(Date.now.timeIntervalSince1970 / 900)
+        content.title = Quips.nudgeTitle(minutes: sitMinutes, seed: seed)
+        content.body = Quips.nudgeBody(seed: seed)
         content.sound = .default
         content.categoryIdentifier = Category.nudge
         content.interruptionLevel = .timeSensitive

@@ -52,7 +52,7 @@ public struct GuidedSession: Hashable, Sendable {
         switch kind {
         case .move:
             GuidedSession(kind: kind, title: "Move", subtitle: "3 min", symbol: "figure.walk", steps: [
-                SessionStep("Walk away from your desk", "Refill your water, take the stairs, step outside. Come back when the timer ends.", seconds: 180),
+                SessionStep("Walk away from your desk", "Touch grass. Literally. Refill your water, take the stairs, go outside. Back when the timer ends.", seconds: 180),
             ])
         case .breathe:
             GuidedSession(kind: kind, title: "Breathe", subtitle: "4-4-4-4", symbol: "wind",
@@ -71,11 +71,11 @@ public struct GuidedSession: Hashable, Sendable {
                 SessionStep("Chest opener", "Hands clasped behind you, lift and open", seconds: 30),
                 SessionStep("Stand: hamstrings", "Feet together, fold forward, let your arms hang", seconds: 30),
                 SessionStep("Stand: calf raises", "Slow up, slow down", seconds: 30),
-                SessionStep("Stand: reach up", "Arms overhead, stretch tall, then shake it out", seconds: 30),
+                SessionStep("Stand: reach up", "Arms overhead, stretch tall, then shake it out. Stretch goal, literally.", seconds: 30),
             ])
         case .eyeRest:
             GuidedSession(kind: kind, title: "Eye rest", subtitle: "20s", symbol: "eye", steps: [
-                SessionStep("Look far away", "Pick something at least 20 feet away and let your eyes relax on it.", seconds: 20),
+                SessionStep("Look far away", "Something at least 20 feet away. The Jira board doesn't count.", seconds: 20),
             ])
         }
     }

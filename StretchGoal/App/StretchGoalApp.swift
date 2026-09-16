@@ -1,4 +1,5 @@
 import SwiftUI
+import StretchGoalCore
 
 @main
 struct StretchGoalApp: App {
@@ -27,7 +28,7 @@ struct StretchGoalApp: App {
         .defaultSize(width: 520, height: 420)
 
         Window("Leaderboard", id: WindowID.leaderboard) {
-            ContentUnavailableView("Leaderboard arrives in phase 3", systemImage: "trophy")
+            ContentUnavailableView("Leaderboard", systemImage: "trophy", description: Text(Quips.leaderboardPlaceholder))
                 .frame(minWidth: 420, minHeight: 320)
         }
         .windowResizability(.contentSize)

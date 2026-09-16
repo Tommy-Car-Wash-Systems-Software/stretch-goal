@@ -9,6 +9,7 @@ public struct LeaderboardEntry: Hashable, Sendable, Identifiable {
     public let streak: Int
     public let goalDays: Int
     public let goalsMetToday: Bool
+    public let steps: Int
 }
 
 public enum Leaderboard {
@@ -31,8 +32,10 @@ public enum Leaderboard {
 
             var points = 0
             var goalDays = 0
+            var steps = 0
             for day in week.days where day <= today {
                 guard let summary = history[day] else { continue }
+                steps += summary.steps
                 let streak = Streak.carried(into: day, history: history, rules: rules, calendar: calendar)
                 let score = Score.daily(summary, streak: streak, rules: rules)
                 points += score.total
@@ -46,7 +49,8 @@ public enum Leaderboard {
                 points: points,
                 streak: Streak.current(today: today, history: history, rules: rules, calendar: calendar),
                 goalDays: goalDays,
-                goalsMetToday: history[today].map(rules.allGoalsMet) ?? false
+                goalsMetToday: history[today].map(rules.allGoalsMet) ?? false,
+                steps: steps
             )
         }
 
@@ -59,7 +63,7 @@ public enum Leaderboard {
 
         return entries.enumerated().map { index, e in
             LeaderboardEntry(memberId: e.memberId, nickname: e.nickname, rank: index + 1, points: e.points,
-                             streak: e.streak, goalDays: e.goalDays, goalsMetToday: e.goalsMetToday)
+                             streak: e.streak, goalDays: e.goalDays, goalsMetToday: e.goalsMetToday, steps: e.steps)
         }
     }
 }

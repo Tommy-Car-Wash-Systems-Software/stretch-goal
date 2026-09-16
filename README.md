@@ -50,9 +50,17 @@ it is always there.
 - **Guided breaks.** Move (3 min walk), Stretch (8 desk stretches, 4 min), Breathe (box
   breathing, 2 min), Eye rest (20 s). Only completed sessions count.
 - **Water.** Tap 250 ml or 500 ml. Undo if you fat-fingered it.
+- **Steps.** Log today's total off your phone or watch, or quick-add a walk. Milestones come
+  with unhinged unit conversions (desk-to-Keurig runs, laps of the wash tunnel). Steps score
+  and will have their own leaderboard column, but they don't gate the all-goals bonus, so
+  people without a step counter can still streak. Automatic sync needs HealthKit, which
+  doesn't exist on macOS; it lands with the iOS app.
 - **Daily goals.** 6 breaks, 8 drinks, 2 mindful sessions. Hit all three for a bonus, hit them
   on consecutive weekdays for a streak multiplier. Weekends don't count for or against you.
 - **History.** Last 30 days in a table.
+- **The voice.** Status lines, nudges, and celebrations rotate through a pool of lines in the
+  register of [issue #1](../../issues/1). Functional labels stay plain; the flavor is in the
+  secondary text. Add lines in `Packages/StretchGoalCore/Sources/StretchGoalCore/Quips.swift`.
 
 ### Scoring
 
@@ -61,6 +69,7 @@ it is always there.
 | Break (detected or completed Move/Stretch) | 10 | 6 | 8 |
 | Water | 3 | 8 | 10 |
 | Mindful (completed Breathe/Eye rest) | 8 | 2 | 4 |
+| Steps (per 1,000) | 2 | 7,000 | 15,000 |
 | All three goals hit | +25 | | |
 
 Streak multiplier: +5% per consecutive perfect weekday carried into today, max +50%. Caps are

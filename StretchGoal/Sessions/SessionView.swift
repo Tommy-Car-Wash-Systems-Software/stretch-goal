@@ -30,7 +30,8 @@ struct SessionView: View {
 
     private var picker: some View {
         VStack(spacing: 12) {
-            Text("Take a break").font(.title2.bold())
+            Text(Quips.sessionPickerTitle).font(.title2.bold())
+            Text(Quips.sessionPickerSubtitle).font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center)
             ForEach(SessionKind.allCases) { kind in
                 let s = GuidedSession.standard(kind)
                 Button {
@@ -106,8 +107,10 @@ struct SessionView: View {
         VStack(spacing: 12) {
             Image(systemName: "checkmark.circle.fill").font(.system(size: 48)).foregroundStyle(.green)
             Text("\(session.title) done").font(.title2.bold())
-            Text(session.kind.credit == .breakTaken ? "Break logged. Sitting timer reset." : "Mindful minute logged.")
+            Text(Quips.sessionDone(session.kind, seed: Int(Date.now.timeIntervalSince1970 / 60)))
                 .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
             Button("Close") {
                 model.sessions.cancel()
                 dismissWindow(id: WindowID.session)

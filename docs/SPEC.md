@@ -78,7 +78,8 @@ Per day, all counts capped so spamming cannot win.
 | Break (detected, or completed Move/Stretch) | 10 | 6 | 8 |
 | Water tap (250 or 500 ml = 1 tap) | 3 | 8 | 10 |
 | Mindful (completed Breathe/Eye rest) | 8 | 2 | 4 |
-| All three goals hit | +25 bonus | | |
+| Steps (per 1,000, manual entry) | 2 | 7,000 | 15,000 |
+| All three desk goals hit (steps excluded) | +25 bonus | | |
 
 Streak = consecutive weekdays with all goals hit. Weekend days neither extend nor break a streak.
 The multiplier on a day's total uses the streak **carried in** from preceding weekdays:
@@ -146,6 +147,7 @@ Stretch Goal/
   "breaks": 4,
   "waterTaps": 6,
   "mindful": 1,
+  "steps": 8200,
   "activeSeconds": 18420,
   "longestSitSeconds": 5400,
   "updatedAt": "2026-09-16T15:42:10Z"
@@ -193,7 +195,14 @@ stretch-goal/
 4. **Ship** — build/release scripts, README, brew cask, first tagged release to the team.
 5. **Later, if it takes off** — backend + accounts, iOS/watch targets on the same Core package, Windows/Android clients writing the same DaySummary.
 
-## 10. Open items
+## 10. Voice (issue #1, 2026-09-16)
+
+Amanda's step-tracking request came with a register the team liked, so the whole app speaks
+it: lowercase, slang-forward, workplace-safe. Lines live in `Quips` (Core), are picked
+deterministically from a seed so views do not flicker, and rotate on a 15-minute bucket. Rules:
+functional labels (buttons, settings, table headers) stay plain; flavor is secondary text only.
+
+## 11. Open items
 
 - Shared library path was not mounted when this spec was written (OneDrive cold). Auto-detect
   glob must be verified against the real path on first run.

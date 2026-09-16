@@ -2,6 +2,7 @@ import AppKit
 import Foundation
 import Observation
 import StretchGoalCore
+import SwiftUI
 
 @Observable
 @MainActor
@@ -86,6 +87,41 @@ final class AppModel {
         commit()
     }
 
+    /// Replace today's total, as read off a phone or watch.
+    func setSteps(_ total: Int) {
+        rolloverIfNeeded(.now)
+        day.summary.steps = max(0, min(total, 200_000))
+        commit()
+    }
+
+    /// Add a walk on top of today's total.
+    func addSteps(_ count: Int) {
+        setSteps(day.summary.steps + count)
+    }
+
+    // MARK: Celebrations
+
+    private var daySeed: Int { today.year * 400 + today.month * 31 + today.day }
+
+    private func celebrateIfEarned() {
+        let s = day.summary
+        if !day.celebratedAllGoals, rules.allGoalsMet(s) {
+            day.celebratedAllGoals = true
+            nudges.celebrate(title: Quips.allGoalsHit(seed: daySeed), body: Quips.streak(streak), symbol: "trophy.fill", tint: .yellow)
+            return
+        }
+        for milestone in Quips.stepMilestones.reversed() where s.steps >= milestone && !day.celebratedMilestones.contains(milestone) {
+            day.celebratedMilestones.append(contentsOf: Quips.stepMilestones.filter { $0 <= milestone })
+            let body = milestone == rules.steps.goal ? Quips.stepsGoalHit(seed: daySeed) : "steps on the leaderboard. everything is a competition."
+            nudges.celebrate(title: Quips.stepMilestone(milestone, seed: daySeed + milestone), body: body, symbol: "figure.walk.motion", tint: .green)
+            return
+        }
+        if s.waterTaps == rules.water.goal, !day.celebratedMilestones.contains(-1) {
+            day.celebratedMilestones.append(-1)
+            nudges.celebrate(title: Quips.waterGoalHit(seed: daySeed), body: "\(day.waterMl) ml today.", symbol: "drop.fill", tint: .blue)
+        }
+    }
+
     func start(_ kind: SessionKind) {
         nudges.dismiss()
         sessions.start(GuidedSession.standard(kind))
@@ -146,7 +182,18 @@ final class AppModel {
 
     private func commit(now: Date = .now) {
         day.refreshSummary(now: now)
+        celebrateIfEarned()
         store.save(day)
+    }
+
+    // MARK: Voice
+
+    func statusLine(at now: Date) -> (headline: String, quip: String) {
+        let seed = daySeed + Int(now.timeIntervalSince1970 / 900)
+        if locked { return ("Away", Quips.away(seed: seed)) }
+        let sit = Int(sittingSeconds(at: now))
+        guard sit > 0 else { return ("Not sitting", Quips.notSitting(seed: seed)) }
+        return ("Sitting for \(MenuBarView.duration(sit))", Quips.sitting(minutes: sit / 60, seed: seed))
     }
 
     var version: String {
@@ -166,7 +213,14 @@ final class AppModel {
         ) { [weak self] _ in
             MainActor.assumeIsolated { self?.previewNudge() }
         }
+        debugStepsObserver = DistributedNotificationCenter.default().addObserver(
+            forName: Notification.Name("com.tommycarwash.StretchGoal.debug.steps"), object: nil, queue: .main
+        ) { [weak self] note in
+            let total = (note.object as? String).flatMap(Int.init) ?? 0
+            MainActor.assumeIsolated { self?.setSteps(total) }
+        }
     }
+    private var debugStepsObserver: (any NSObjectProtocol)?
     #endif
 }
 

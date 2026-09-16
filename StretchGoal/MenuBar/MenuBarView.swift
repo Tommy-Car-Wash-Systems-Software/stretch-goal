@@ -5,6 +5,9 @@ struct MenuBarView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.openWindow) private var openWindow
     @Environment(\.openSettings) private var openSettings
+    @State private var editingSteps = false
+    @State private var stepsDraft = ""
+    @FocusState private var stepsFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -22,6 +25,7 @@ struct MenuBarView: View {
                 goals
             }
             water
+            steps
             Divider()
             breaks
             Divider()
@@ -35,31 +39,19 @@ struct MenuBarView: View {
 
     private var header: some View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
-            HStack(alignment: .firstTextBaseline) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Stretch Goal").font(.headline)
-                    Text(sittingLine(at: context.date))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .contentTransition(.numericText())
-                }
-                Spacer()
-                VStack(alignment: .trailing, spacing: 2) {
+            let status = model.statusLine(at: context.date)
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(status.headline).font(.headline).contentTransition(.numericText())
+                    Spacer()
                     Text("\(model.score.total) pts").font(.headline.monospacedDigit())
-                    if model.streak > 0 {
-                        Label("\(model.streak) day streak", systemImage: "flame.fill")
-                            .font(.caption).foregroundStyle(.orange)
-                    }
                 }
+                Text(status.quip).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                Label(Quips.streak(model.streak), systemImage: model.streak > 0 ? "flame.fill" : "flame")
+                    .font(.caption).foregroundStyle(model.streak > 0 ? .orange : .secondary)
+                    .lineLimit(1)
             }
         }
-    }
-
-    private func sittingLine(at now: Date) -> String {
-        if model.locked { return "Away" }
-        let sit = Int(model.sittingSeconds(at: now))
-        guard sit > 0 else { return "Not sitting" }
-        return "Sitting for \(Self.duration(sit))"
     }
 
     private var goals: some View {
@@ -109,9 +101,52 @@ struct MenuBarView: View {
         .controlSize(.small)
     }
 
+    private var steps: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                Label { Text("Steps") } icon: { Image(systemName: "shoeprints.fill").foregroundStyle(.teal) }
+                    .font(.callout)
+                Text("\(model.day.summary.steps.formatted()) / \(model.rules.steps.goal.formatted())")
+                    .font(.callout.monospacedDigit())
+                    .foregroundStyle(model.rules.steps.goalMet(model.day.summary.steps) ? .teal : .secondary)
+                Spacer()
+                Button(editingSteps ? "Done" : "Log") {
+                    editingSteps.toggle()
+                    if editingSteps { stepsDraft = ""; stepsFocused = true }
+                }
+                .controlSize(.small)
+            }
+            ProgressView(value: Double(min(model.day.summary.steps, model.rules.steps.goal)), total: Double(model.rules.steps.goal))
+                .tint(.teal)
+            if editingSteps {
+                HStack(spacing: 6) {
+                    TextField("today's total from your phone", text: $stepsDraft)
+                        .textFieldStyle(.roundedBorder)
+                        .focused($stepsFocused)
+                        .onSubmit(commitStepsDraft)
+                    Button("Set") { commitStepsDraft() }.disabled(Int(stepsDraft.filter(\.isNumber)) == nil)
+                    Button("+500") { model.addSteps(500) }
+                    Button("+1k") { model.addSteps(1000) }
+                }
+                .controlSize(.small)
+                Text("manual for the humble. watch sync lands with the iOS app, for the chronically optimized.")
+                    .font(.caption2).foregroundStyle(.tertiary)
+            }
+        }
+    }
+
+    private func commitStepsDraft() {
+        if let total = Int(stepsDraft.filter(\.isNumber)) { model.setSteps(total) }
+        stepsDraft = ""
+        editingSteps = false
+    }
+
     private var breaks: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("TAKE A BREAK").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+            HStack(spacing: 6) {
+                Text("TAKE A BREAK").font(.caption2.weight(.semibold)).foregroundStyle(.secondary)
+                Text("· \(Quips.sessionPickerTitle)").font(.caption2).foregroundStyle(.tertiary)
+            }
             ForEach(SessionKind.allCases) { kind in
                 let s = GuidedSession.standard(kind)
                 Button {

@@ -62,6 +62,22 @@ final class NudgePresenter {
         }
     }
 
+    /// A short, self-dismissing card with no actions: milestones, goals hit, streaks.
+    func celebrate(title: String, body: String, symbol: String, tint: Color) {
+        dismiss()
+        for screen in NSScreen.screens {
+            let content = CelebrationView(title: title, body: body, symbol: symbol, tint: tint) { [weak self] in self?.dismiss() }
+            let panel = makePanel(for: screen, fullScreen: false, content: content)
+            panels.append(panel)
+            panel.orderFrontRegardless()
+        }
+        autoDismiss = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(8))
+            guard !Task.isCancelled else { return }
+            self?.dismiss()
+        }
+    }
+
     func dismiss() {
         autoDismiss?.cancel()
         autoDismiss = nil
@@ -69,7 +85,7 @@ final class NudgePresenter {
         panels.removeAll()
     }
 
-    private func makePanel(for screen: NSScreen, fullScreen: Bool, content: NudgeView) -> NSPanel {
+    private func makePanel(for screen: NSScreen, fullScreen: Bool, content: some View) -> NSPanel {
         let frame: NSRect
         if fullScreen {
             frame = screen.frame
@@ -95,10 +111,45 @@ final class NudgePresenter {
     }
 }
 
+struct CelebrationView: View {
+    let title: String
+    let body_: String
+    let symbol: String
+    let tint: Color
+    let onTap: () -> Void
+
+    init(title: String, body: String, symbol: String, tint: Color, onTap: @escaping () -> Void) {
+        self.title = title
+        self.body_ = body
+        self.symbol = symbol
+        self.tint = tint
+        self.onTap = onTap
+    }
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Image(systemName: symbol).font(.system(size: 30)).foregroundStyle(tint)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title).font(.headline)
+                Text(body_).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(16)
+        .frame(width: 440, height: 132, alignment: .leading)
+        .background(.regularMaterial, in: .rect(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(tint.opacity(0.35)))
+        .contentShape(.rect)
+        .onTapGesture(perform: onTap)
+    }
+}
+
 struct NudgeView: View {
     let sitMinutes: Int
     let fullScreen: Bool
     let onAction: (SessionKind?) -> Void
+
+    private var seed: Int { sitMinutes * 7 + Int(Date.now.timeIntervalSince1970 / 900) }
 
     var body: some View {
         if fullScreen { full } else { compact }
@@ -111,15 +162,15 @@ struct NudgeView: View {
                 .foregroundStyle(.green)
             VStack(alignment: .leading, spacing: 8) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("You've been sitting for \(sitMinutes) min").font(.headline)
-                    Text("Stand up. Your streak is watching.").font(.caption).foregroundStyle(.secondary)
+                    Text(Quips.nudgeTitle(minutes: sitMinutes, seed: seed)).font(.headline).lineLimit(1)
+                    Text(Quips.nudgeBody(seed: seed)).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
                 HStack(spacing: 6) {
                     sessionButton(.move, compact: true)
                     sessionButton(.stretch, compact: true)
                     sessionButton(.breathe, compact: true)
                     Spacer()
-                    Button("Snooze") { onAction(nil) }
+                    Button(Quips.snooze(seed: seed)) { onAction(nil) }
                         .buttonStyle(NudgeButtonStyle(color: .gray.opacity(0.5), compact: true))
                 }
             }
@@ -137,9 +188,10 @@ struct NudgeView: View {
                 Image(systemName: "figure.walk.motion")
                     .font(.system(size: 72))
                     .foregroundStyle(.green)
-                Text("You've been sitting for \(sitMinutes) minutes")
+                Text(Quips.nudgeTitle(minutes: sitMinutes, seed: seed))
                     .font(.system(size: 34, weight: .bold, design: .rounded))
-                Text("Pick a break. The screen comes back when you do.")
+                    .multilineTextAlignment(.center)
+                Text(Quips.nudgeBody(seed: seed) + " The screen comes back when you do.")
                     .font(.title3)
                     .foregroundStyle(.secondary)
                 HStack(spacing: 12) {
@@ -148,7 +200,7 @@ struct NudgeView: View {
                     sessionButton(.breathe, compact: false)
                     sessionButton(.eyeRest, compact: false)
                 }
-                Button("Snooze 15 min") { onAction(nil) }
+                Button(Quips.snooze(seed: seed)) { onAction(nil) }
                     .buttonStyle(.plain)
                     .foregroundStyle(.secondary)
                     .keyboardShortcut(.cancelAction)
