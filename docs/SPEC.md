@@ -54,10 +54,14 @@ Mirrors Brian's current personal app, plus a team tab.
 - Sitting timer starts on activity, resets after ≥ 3 min idle. A reset after ≥ 20 min of sitting = one detected break.
 - Nudge notification at 45 min sitting (configurable), repeats every 15 min until a break.
 - Optional work-hours window in Settings (default 07:00–18:00); nothing is counted outside it.
+- Guided sessions run in their own floating window (the menu bar popover closes on focus loss).
+  The window is also reachable via `stretchgoal://session/<move|breathe|stretch|eyeRest>`, which
+  is how notification actions open it.
 
 **Settings**
 - Nickname (shown to the team), opt-in to sharing (default off until they flip it).
-- Goals per day (breaks, water, mindful) and nudge interval.
+- Nudge interval and repeat. Daily goals are **not** user-configurable: everyone scores against
+  the same `ScoringRules.standard` so the leaderboard stays comparable.
 - Shared folder (auto-detected, with Choose… fallback).
 - Launch at login (`SMAppService`).
 

@@ -11,6 +11,21 @@ struct StretchGoalApp: App {
         }
         .menuBarExtraStyle(.window)
 
+        Window("Break", id: WindowID.session) {
+            SessionView()
+                .environment(model)
+        }
+        .windowResizability(.contentSize)
+        .windowLevel(.floating)
+        .defaultPosition(.center)
+        .handlesExternalEvents(matching: ["session"])
+
+        Window("History", id: WindowID.history) {
+            HistoryView()
+                .environment(model)
+        }
+        .defaultSize(width: 520, height: 420)
+
         Window("Leaderboard", id: WindowID.leaderboard) {
             ContentUnavailableView("Leaderboard arrives in phase 3", systemImage: "trophy")
                 .frame(minWidth: 420, minHeight: 320)
@@ -25,5 +40,7 @@ struct StretchGoalApp: App {
 }
 
 enum WindowID {
+    static let session = "session"
+    static let history = "history"
     static let leaderboard = "leaderboard"
 }

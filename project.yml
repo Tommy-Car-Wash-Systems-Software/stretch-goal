@@ -35,6 +35,9 @@ targets:
         LSUIElement: true
         LSMinimumSystemVersion: $(MACOSX_DEPLOYMENT_TARGET)
         NSHumanReadableCopyright: ""
+        CFBundleURLTypes:
+          - CFBundleURLName: com.brianp.StretchGoal
+            CFBundleURLSchemes: [stretchgoal]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.brianp.StretchGoal

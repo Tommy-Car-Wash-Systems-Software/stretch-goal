@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import Observation
 import StretchGoalCore
@@ -5,25 +6,122 @@ import StretchGoalCore
 @Observable
 @MainActor
 final class AppModel {
-    private(set) var today: DayKey = DayKey(.now)
-    private(set) var summary: DaySummary
-    var rules: ScoringRules = .standard
-
+    let prefs = Preferences()
+    let notifier = Notifier()
+    let sessions = SessionRunner()
+    let rules: ScoringRules = .standard
     let deviceId: String
     let memberId: String
 
+    private(set) var day: LocalDay
+    /// Past days only; today lives in `day`.
+    private(set) var pastDays: [DayKey: DaySummary]
+    private(set) var locked = false
+
+    private let store = DayStore()
+    private var monitor: ActivityMonitor?
+
     init() {
-        let day = DayKey(.now)
         let device = Identity.deviceId()
         let member = Identity.memberId()
-        today = day
+        let today = DayKey(.now)
+        let store = DayStore()
         deviceId = device
         memberId = member
-        summary = DaySummary(memberId: member, deviceId: device, date: day)
+        day = store.load(today) ?? LocalDay(summary: DaySummary(memberId: member, deviceId: device, date: today))
+        pastDays = Dictionary(uniqueKeysWithValues: store.loadRecent(limit: 60, excluding: today).map { ($0.date, $0.summary) })
+
+        sessions.onComplete = { [weak self] kind in self?.complete(kind) }
+        monitor = ActivityMonitor { [weak self] idle, locked in self?.sample(idleSeconds: idle, locked: locked) }
+        Task { await notifier.requestAuthorization() }
     }
 
+    // MARK: Derived state
+
+    var today: DayKey { day.date }
+
+    var history: [DayKey: DaySummary] {
+        var all = pastDays
+        all[today] = day.summary
+        return all
+    }
+
+    var streak: Int { Streak.current(today: today, history: history, rules: rules) }
+
     var score: DayScore {
-        Score.daily(summary, streak: 0, rules: rules)
+        Score.daily(day.summary, streak: Streak.carried(into: today, history: history, rules: rules), rules: rules)
+    }
+
+    func sittingSeconds(at now: Date) -> TimeInterval { day.tracker.currentSit(at: now) }
+
+    enum DayStatus { case none, partial, complete, future }
+
+    func weekStatuses() -> [(day: DayKey, status: DayStatus)] {
+        Week(containing: today).days.map { d in
+            if d > today { return (d, .future) }
+            guard let s = history[d] else { return (d, .none) }
+            if rules.allGoalsMet(s) { return (d, .complete) }
+            return (d, s.breaks + s.waterTaps + s.mindful > 0 ? .partial : .none)
+        }
+    }
+
+    var recentDays: [DaySummary] {
+        history.values.sorted { $0.date > $1.date }
+    }
+
+    // MARK: Actions
+
+    func logWater(ml: Int) {
+        day.waterEntriesMl.append(ml)
+        commit()
+    }
+
+    func undoWater() {
+        guard !day.waterEntriesMl.isEmpty else { return }
+        day.waterEntriesMl.removeLast()
+        commit()
+    }
+
+    func start(_ kind: SessionKind) {
+        sessions.start(GuidedSession.standard(kind))
+    }
+
+    private func complete(_ kind: SessionKind) {
+        rolloverIfNeeded(.now)
+        day.completedSessions.append(kind)
+        if kind.credit == .breakTaken {
+            Tracker.recordMovement(&day.tracker, at: .now)
+        }
+        commit()
+    }
+
+    // MARK: Sampling
+
+    private func sample(idleSeconds: TimeInterval, locked: Bool) {
+        let now = Date.now
+        self.locked = locked
+        rolloverIfNeeded(now)
+        let events = Tracker.advance(&day.tracker, now: now, idleSeconds: idleSeconds, locked: locked, config: prefs.trackerConfig)
+        for event in events {
+            if case let .nudge(sitSeconds) = event {
+                notifier.nudge(sitMinutes: sitSeconds / 60)
+            }
+        }
+        commit(now: now)
+    }
+
+    private func rolloverIfNeeded(_ now: Date) {
+        let key = DayKey(now)
+        guard key != day.date else { return }
+        day.refreshSummary(now: now)
+        store.save(day)
+        pastDays[day.date] = day.summary
+        day = LocalDay(summary: DaySummary(memberId: memberId, deviceId: deviceId, date: key))
+    }
+
+    private func commit(now: Date = .now) {
+        day.refreshSummary(now: now)
+        store.save(day)
     }
 
     var version: String {
@@ -31,6 +129,8 @@ final class AppModel {
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0"
         return "\(short) (\(build))"
     }
+
+    var storeDirectory: URL { store.directory }
 }
 
 enum Identity {
