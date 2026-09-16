@@ -17,7 +17,7 @@ struct SessionView: View {
                 finished(session)
             }
         }
-        .frame(width: 360, height: 300)
+        .frame(width: 360, height: 380)
         .background(.regularMaterial)
         .onOpenURL { url in
             guard url.host() == "session",
@@ -57,7 +57,7 @@ struct SessionView: View {
             Spacer()
             if let current {
                 if session.kind == .breathe {
-                    breathingOrb(step: current.step, remaining: current.remaining)
+                    breathingOrb(step: current.step, index: current.index, remaining: current.remaining)
                 } else {
                     Text(current.step.title)
                         .font(.system(size: 26, weight: .semibold, design: .rounded))
@@ -85,16 +85,20 @@ struct SessionView: View {
         .padding(24)
     }
 
-    private func breathingOrb(step: SessionStep, remaining: Int) -> some View {
-        let scale: CGFloat = step.title == "Inhale" ? 1.0 : step.title == "Exhale" ? 0.55 : 0.8
+    private func breathingOrb(step: SessionStep, index: Int, remaining: Int) -> some View {
+        // Box breathing: inhale (grow), hold (stay big), exhale (shrink), hold (stay small).
+        let phase = index % 4
+        let scale: CGFloat = (phase == 0 || phase == 1) ? 1.0 : 0.5
         return VStack(spacing: 10) {
             Circle()
-                .fill(.blue.gradient.opacity(0.7))
-                .frame(width: 120, height: 120)
+                .fill(.blue.gradient.opacity(0.75))
+                .frame(width: 110, height: 110)
                 .scaleEffect(scale)
-                .animation(.easeInOut(duration: 3.6), value: step.title)
+                .animation(phase == 1 || phase == 3 ? .none : .easeInOut(duration: 3.8), value: index)
+                .frame(height: 120)
             Text(step.title).font(.title2.weight(.semibold))
             Text("\(remaining)").font(.title3.monospacedDigit()).foregroundStyle(.secondary)
+                .contentTransition(.numericText())
         }
     }
 

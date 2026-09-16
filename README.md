@@ -13,19 +13,29 @@ Requires **macOS 26 (Tahoe) or later**.
 ```bash
 brew tap tommy-car-wash-systems-software/tap
 brew trust tommy-car-wash-systems-software/tap
-brew install --cask --no-quarantine stretch-goal
+brew install --cask stretch-goal
 ```
 
-`brew trust` is a one-time step recent Homebrew requires for third-party taps. `--no-quarantine`
-matters: the app is signed but not notarized with a paid Apple Developer ID, so without it macOS
-will refuse to open it. Updates later are just `brew upgrade`.
+`brew trust` is a one-time step recent Homebrew requires for third-party taps. Updates later
+are just `brew upgrade`.
 
 ### Manual
 
-1. Download `StretchGoal-<version>.zip` from the [latest release](../../releases/latest).
-2. Unzip and drag **Stretch Goal.app** into `/Applications`.
-3. First launch: macOS will say it "could not verify" the app. Open **System Settings →
-   Privacy & Security**, scroll down, and click **Open Anyway**. You only do this once.
+Download `StretchGoal-<version>.zip` from the [latest release](../../releases/latest), unzip,
+and drag **Stretch Goal.app** into `/Applications`.
+
+### First launch (either way)
+
+The app is signed but not notarized with a paid Apple Developer ID, so macOS blocks the first
+launch with "Apple could not verify Stretch Goal is free of malware." Pick one:
+
+- Click **Done**, open **System Settings → Privacy & Security**, scroll down and click
+  **Open Anyway**. One time only.
+- Or, in Terminal, clear the quarantine flag and launch:
+
+  ```bash
+  xattr -dr com.apple.quarantine "/Applications/Stretch Goal.app" && open "/Applications/Stretch Goal.app"
+  ```
 
 Then look for the walking figure in your menu bar. Turn on **Launch at login** in Settings so
 it is always there.
