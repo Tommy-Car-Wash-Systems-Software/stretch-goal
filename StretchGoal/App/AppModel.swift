@@ -35,6 +35,8 @@ final class AppModel {
 
         sessions.onComplete = { [weak self] kind in self?.complete(kind) }
         sessions.idleSeconds = { ActivityMonitor.idleSeconds() }
+        sessions.isLocked = { [weak self] in self?.locked ?? false }
+        LoginItem.healIfNeeded()
         monitor = ActivityMonitor { [weak self] idle, locked in self?.sample(idleSeconds: idle, locked: locked) }
         Task { await notifier.requestAuthorization() }
         #if DEBUG

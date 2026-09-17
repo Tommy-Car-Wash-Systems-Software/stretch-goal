@@ -54,8 +54,18 @@ final class ActivityMonitor {
         handler(Self.idleSeconds(), locked)
     }
 
+    /// Event types that mean a human touched the machine. The "any event" counter also resets
+    /// on system-generated events (display sleep/wake, lock screen), which produced phantom
+    /// input during guided sessions.
+    private static let userInputEvents: [CGEventType] = [
+        .keyDown, .mouseMoved, .scrollWheel,
+        .leftMouseDown, .rightMouseDown, .otherMouseDown,
+        .leftMouseDragged, .rightMouseDragged, .otherMouseDragged,
+    ]
+
     static func idleSeconds() -> TimeInterval {
-        let anyEvent = CGEventType(rawValue: ~0)!
-        return CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: anyEvent)
+        userInputEvents
+            .map { CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: $0) }
+            .min() ?? .infinity
     }
 }

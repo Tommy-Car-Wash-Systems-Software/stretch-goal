@@ -38,7 +38,8 @@ launch with "Apple could not verify Stretch Goal is free of malware." Pick one:
   ```
 
 Then look for the walking figure in your menu bar. Turn on **Launch at login** in Settings so
-it is always there.
+it is always there. Only the copy in `/Applications` can register itself, and a second copy
+launching while one is running quits immediately, so dev builds can't double up.
 
 ## What it does
 
@@ -105,8 +106,10 @@ This is a competition, so every input has a guard:
 - **Water** stops at the 2 L recommendation and refuses more than 750 ml in any 30 minutes.
   Nobody drinks two litres in a minute.
 - **Guided breaks** watch your keyboard and mouse. Keep typing during a Move and it fails
-  with no credit: 10 seconds of input tolerated for Move, 30 for Stretch, 15 for Breathe,
-  3 for Eye rest. Only completed, clean sessions score.
+  with no credit: 15 seconds of input tolerated for Move, 30 for Stretch, 15 for Breathe,
+  5 for Eye rest. The first 3 seconds are ignored so you can lock the screen and push back
+  your chair. Only real input counts: display sleep, wake, and the lock screen don't. Only
+  completed, clean sessions score.
 - **Detected breaks** need a 20-minute sit ended by 3+ minutes away, and a completed Move or
   Stretch consumes the current sit so it can't be credited twice.
 - **Steps** are honor-system by nature, but entries clamp at 30,000 and only 15,000 score.

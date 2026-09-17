@@ -4,7 +4,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(AppModel.self) private var model
-    @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
+    @State private var launchAtLogin = LoginItem.isEnabled
     @State private var loginError: String?
 
     var body: some View {
@@ -47,6 +47,11 @@ struct SettingsView: View {
             Section("System") {
                 Toggle("Launch at login", isOn: $launchAtLogin)
                     .onChange(of: launchAtLogin) { _, enabled in setLaunchAtLogin(enabled) }
+                    .disabled(!LoginItem.isInstalledCopy)
+                if !LoginItem.isInstalledCopy {
+                    Text("Only the copy in /Applications can launch at login. This one is running from \(Bundle.main.bundlePath).")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
                 if let loginError {
                     Text(loginError).font(.caption).foregroundStyle(.red)
                 }
@@ -68,11 +73,11 @@ struct SettingsView: View {
 
     private func setLaunchAtLogin(_ enabled: Bool) {
         do {
-            if enabled { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
+            try LoginItem.setEnabled(enabled)
             loginError = nil
         } catch {
             loginError = error.localizedDescription
-            launchAtLogin = SMAppService.mainApp.status == .enabled
+            launchAtLogin = LoginItem.isEnabled
         }
     }
 

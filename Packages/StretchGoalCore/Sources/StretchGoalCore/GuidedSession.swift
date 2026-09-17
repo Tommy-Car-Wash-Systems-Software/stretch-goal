@@ -19,10 +19,10 @@ public enum SessionKind: String, CaseIterable, Codable, Sendable, Identifiable {
     /// You cannot walk, stretch, breathe, or look away while typing.
     public var allowedActiveSeconds: Double {
         switch self {
-        case .move: 10
+        case .move: 15
         case .stretch: 30
         case .breathe: 15
-        case .eyeRest: 3
+        case .eyeRest: 5
         }
     }
 }

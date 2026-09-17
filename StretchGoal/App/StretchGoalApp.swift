@@ -3,7 +3,23 @@ import StretchGoalCore
 
 @main
 struct StretchGoalApp: App {
-    @State private var model = AppModel()
+    @State private var model: AppModel
+
+    init() {
+        Self.exitIfAnotherInstanceIsRunning()
+        _model = State(initialValue: AppModel())
+    }
+
+    /// Two copies (say, /Applications and a dev build) both writing the day file corrupts it.
+    /// The one already running wins; this one hands over and quits.
+    private static func exitIfAnotherInstanceIsRunning() {
+        guard let bundleId = Bundle.main.bundleIdentifier else { return }
+        let others = NSRunningApplication.runningApplications(withBundleIdentifier: bundleId)
+            .filter { $0.processIdentifier != ProcessInfo.processInfo.processIdentifier }
+        guard let other = others.first else { return }
+        other.activate()
+        exit(0)
+    }
 
     var body: some Scene {
         MenuBarExtra("Stretch Goal", systemImage: "figure.walk") {

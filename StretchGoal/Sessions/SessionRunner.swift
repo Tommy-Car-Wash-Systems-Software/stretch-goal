@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import OSLog
 import StretchGoalCore
 
 @Observable
@@ -21,9 +22,13 @@ final class SessionRunner {
     var onComplete: ((SessionKind) -> Void)?
     /// Injected so tests and previews do not touch CoreGraphics.
     var idleSeconds: () -> TimeInterval = { .infinity }
+    /// Screen locked or asleep: nobody can be typing, and idle readings are unreliable.
+    var isLocked: () -> Bool = { false }
 
     private static let tick: Double = 0.2
-    private static let inputGraceAtStart: Double = 1.5
+    /// People lock the screen or push the chair back right after starting. Ignore that.
+    private static let inputGraceAtStart: Double = 3
+    private static let log = Logger(subsystem: "com.tommycarwash.StretchGoal", category: "session")
 
     private var ticker: Task<Void, Never>?
 
@@ -68,14 +73,17 @@ final class SessionRunner {
         let since = Date.now.timeIntervalSince(startedAt)
         elapsed = Int(since)
 
-        // The click that started the session resets idle time; ignore the first moment.
-        if since > Self.inputGraceAtStart, idleSeconds() < Self.tick * 2 {
-            activeSeconds += Self.tick
-            if activeSeconds > session.kind.allowedActiveSeconds {
-                ticker?.cancel()
-                ticker = nil
-                phase = .failed(session)
-                return
+        if since > Self.inputGraceAtStart, !isLocked() {
+            let idle = idleSeconds()
+            if idle < Self.tick * 2 {
+                activeSeconds += Self.tick
+                if activeSeconds > session.kind.allowedActiveSeconds {
+                    ticker?.cancel()
+                    ticker = nil
+                    phase = .failed(session)
+                    Self.log.notice("\(session.kind.rawValue) failed after \(self.elapsed)s: \(self.activeSeconds, format: .fixed(precision: 1))s of input (allowed \(session.kind.allowedActiveSeconds)), last idle \(idle, format: .fixed(precision: 2))s")
+                    return
+                }
             }
         }
 
@@ -83,6 +91,7 @@ final class SessionRunner {
             ticker?.cancel()
             ticker = nil
             phase = .finished(session)
+            Self.log.notice("\(session.kind.rawValue) completed with \(self.activeSeconds, format: .fixed(precision: 1))s of input")
             onComplete?(session.kind)
         }
     }

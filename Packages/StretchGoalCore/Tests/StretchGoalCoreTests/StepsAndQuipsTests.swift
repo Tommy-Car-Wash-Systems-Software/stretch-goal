@@ -167,8 +167,8 @@ import Foundation
     }
 
     @Test func sessionsTolerateOnlyBriefInput() {
-        #expect(SessionKind.move.allowedActiveSeconds == 10)
-        #expect(SessionKind.eyeRest.allowedActiveSeconds == 3)
+        #expect(SessionKind.move.allowedActiveSeconds == 15)
+        #expect(SessionKind.eyeRest.allowedActiveSeconds == 5)
         #expect(SessionKind.allCases.allSatisfy { $0.allowedActiveSeconds < Double(GuidedSession.standard($0).totalSeconds) })
     }
 
