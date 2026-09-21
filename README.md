@@ -1,8 +1,8 @@
 # Stretch Goal
 
 A macOS menu bar app that nags you, kindly, to take care of yourself while you work: get up,
-stretch, drink water, rest your eyes. It scores your day, keeps a streak, and soon will sync a
-weekly leaderboard with the rest of the team through our shared OneDrive.
+stretch, drink water, rest your eyes. It scores your day, keeps a streak, and syncs a weekly
+leaderboard with the rest of the team through our shared OneDrive library.
 
 Requires **macOS 26 (Tahoe) or later**.
 
@@ -61,6 +61,10 @@ launching while one is running quits immediately, so dev builds can't double up.
   hit them on consecutive weekdays for a streak multiplier. Weekends don't count for or against
   you. Steps and eye rests score on top but never gate the bonus.
 - **History.** Last 30 days in a table.
+- **Team leaderboard.** Opt in under Settings → Team, pick a nickname, and your daily totals
+  publish to `Software Development Team - General/Stretch Goal/` in the OneDrive library you
+  already sync. Everyone's app reads everyone's files and ranks the week: points, streak,
+  perfect days, steps. Monday to Sunday, last week one click away.
 - **The voice.** Status lines, nudges, and celebrations rotate through a pool of lines in the
   register of [issue #1](../../issues/1). Functional labels stay plain; the flavor is in the
   secondary text. Add lines in `Packages/StretchGoalCore/Sources/StretchGoalCore/Quips.swift`.
@@ -118,18 +122,27 @@ This is a competition, so every input has a guard:
 
 ## Privacy
 
-Everything is stored locally in `~/Library/Application Support/Stretch Goal/`. Nothing leaves
-your Mac yet. When the team leaderboard ships, only daily totals (breaks, drinks, mindful
-sessions, active time) will be shared, sharing will be opt-in, and you pick your nickname. Raw
-activity timelines never leave the machine.
+Everything is stored locally in `~/Library/Application Support/Stretch Goal/`. Sharing is off
+until you turn it on. When you do, only one small file per day leaves your Mac: breaks, water,
+breathing, eye rests, steps, active seconds, longest sit. No timestamps of when you were or
+weren't at the keyboard. You pick the name shown. Turn sharing off and publishing stops.
+
+### How the sync works, for the curious
+
+No server. Each person's app writes only its own files, `members/<you>/daily/<date>.<device>.json`,
+so two people can never overwrite each other and OneDrive never has to resolve a conflict.
+Everyone's app reads all the files for this week and last, merges multiple Macs per person by
+taking the max of each count, and recomputes points locally with the same rules. A file that
+hasn't downloaded yet, is malformed, or claims to be someone else's is skipped, not trusted.
+Refresh is every 60 seconds plus whenever you open the leaderboard. If OneDrive is offline you
+see the last good board with the sync time on it.
 
 ## Roadmap
 
-1. ~~Local tracker~~ (this release)
-2. Team leaderboard synced via the shared OneDrive library, one file per person so nobody
-   overwrites anybody.
-3. If it takes off: proper backend, iOS and watch apps on the same core package, Windows and
-   Android clients.
+1. ~~Local tracker~~
+2. ~~Team leaderboard via the shared OneDrive library~~
+3. If it takes off: proper backend, iOS and watch apps on the same core package (and HealthKit
+   step sync), Windows and Android clients writing the same daily file.
 
 ## Development
 

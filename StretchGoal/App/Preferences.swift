@@ -14,6 +14,7 @@ final class Preferences {
     var workEndMinute: Int { didSet { defaults.set(workEndMinute, forKey: Key.workEnd) } }
     var nickname: String { didSet { defaults.set(nickname, forKey: Key.nickname) } }
     var nudgeStyle: NudgeStyle { didSet { defaults.set(nudgeStyle.rawValue, forKey: Key.nudgeStyle) } }
+    var sharingEnabled: Bool { didSet { defaults.set(sharingEnabled, forKey: Key.sharingEnabled) } }
 
     init() {
         nudgeAfterMinutes = defaults.object(forKey: Key.nudgeAfter) as? Int ?? 45
@@ -23,6 +24,7 @@ final class Preferences {
         workEndMinute = defaults.object(forKey: Key.workEnd) as? Int ?? 18 * 60
         nickname = defaults.string(forKey: Key.nickname) ?? NSFullUserName()
         nudgeStyle = defaults.string(forKey: Key.nudgeStyle).flatMap(NudgeStyle.init(rawValue:)) ?? .panel
+        sharingEnabled = defaults.object(forKey: Key.sharingEnabled) as? Bool ?? false
     }
 
     var trackerConfig: TrackerConfig {
@@ -41,5 +43,6 @@ final class Preferences {
         static let workEnd = "prefs.workEndMinute"
         static let nickname = "prefs.nickname"
         static let nudgeStyle = "prefs.nudgeStyle"
+        static let sharingEnabled = "prefs.sharingEnabled"
     }
 }

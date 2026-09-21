@@ -118,7 +118,6 @@ public enum Quips {
         }
     }
 
-    public static let leaderboardPlaceholder = "leaderboard drops when OneDrive stops gatekeeping. start building your streak now, bestie."
     public static let historyEmpty = "no history yet. every legend has a day one."
 
     // MARK: Steps

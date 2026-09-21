@@ -44,10 +44,12 @@ struct StretchGoalApp: App {
         .defaultSize(width: 520, height: 420)
 
         Window("Leaderboard", id: WindowID.leaderboard) {
-            ContentUnavailableView("Leaderboard", systemImage: "trophy", description: Text(Quips.leaderboardPlaceholder))
-                .frame(minWidth: 420, minHeight: 320)
+            LeaderboardView()
+                .environment(model)
+                .task { await model.sync.refresh() }
         }
-        .windowResizability(.contentSize)
+        .defaultSize(width: 680, height: 420)
+        .handlesExternalEvents(matching: ["leaderboard"])
 
         Settings {
             SettingsView()

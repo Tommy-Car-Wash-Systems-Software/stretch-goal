@@ -10,9 +10,29 @@ struct SettingsView: View {
     var body: some View {
         @Bindable var prefs = model.prefs
         Form {
-            Section("You") {
+            Section("Team") {
                 TextField("Nickname", text: $prefs.nickname)
                     .help("Shown on the team leaderboard once sharing is turned on")
+                    .onSubmit { if prefs.sharingEnabled { model.setSharing(true) } }
+                Toggle("Share my daily totals with the team", isOn: Binding(
+                    get: { prefs.sharingEnabled },
+                    set: { model.setSharing($0) }
+                ))
+                Text("Publishes breaks, water, breathing, eye rests, steps and active time for each day to the shared folder. Raw activity never leaves this Mac.")
+                    .font(.caption).foregroundStyle(.secondary)
+                LabeledContent("Shared folder") {
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Text(model.sync.folderURL?.path.replacingOccurrences(of: NSHomeDirectory(), with: "~") ?? "not found")
+                            .font(.caption).foregroundStyle(.secondary).lineLimit(2).truncationMode(.middle)
+                        HStack {
+                            Button("Choose…") { chooseFolder() }
+                            if SharedFolderLocator.override != nil {
+                                Button("Use default") { model.chooseSharedFolder(nil) }
+                            }
+                        }
+                    }
+                }
+                LabeledContent("Status", value: model.sync.status.label)
             }
 
             Section("Nudges") {
@@ -69,6 +89,17 @@ struct SettingsView: View {
         .formStyle(.grouped)
         .frame(width: 440)
         .task { await model.notifier.refreshAuthorization() }
+    }
+
+    private func chooseFolder() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.canCreateDirectories = true
+        panel.prompt = "Use this folder"
+        panel.message = "Pick the team's shared Stretch Goal folder (inside the OneDrive library everyone syncs)."
+        if let root = SharedFolderLocator.libraryRoot() { panel.directoryURL = root }
+        if panel.runModal() == .OK, let url = panel.url { model.chooseSharedFolder(url) }
     }
 
     private func setLaunchAtLogin(_ enabled: Bool) {

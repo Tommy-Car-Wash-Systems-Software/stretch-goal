@@ -11,6 +11,7 @@ final class AppModel {
     let notifier = Notifier()
     let sessions = SessionRunner()
     let nudges = NudgePresenter()
+    let sync: SyncService
     let rules: ScoringRules = .standard
     let deviceId: String
     let memberId: String
@@ -30,6 +31,7 @@ final class AppModel {
         let store = DayStore()
         deviceId = device
         memberId = member
+        sync = SyncService(cacheDirectory: store.directory.deletingLastPathComponent())
         day = store.load(today) ?? LocalDay(summary: DaySummary(memberId: member, deviceId: device, date: today))
         pastDays = Dictionary(uniqueKeysWithValues: store.loadRecent(limit: 60, excluding: today).map { ($0.date, $0.summary) })
 
@@ -37,6 +39,7 @@ final class AppModel {
         sessions.idleSeconds = { ActivityMonitor.idleSeconds() }
         sessions.isLocked = { [weak self] in self?.locked ?? false }
         LoginItem.healIfNeeded()
+        sync.start(enabled: prefs.sharingEnabled)
         monitor = ActivityMonitor { [weak self] idle, locked in self?.sample(idleSeconds: idle, locked: locked) }
         Task { await notifier.requestAuthorization() }
         #if DEBUG
@@ -94,7 +97,7 @@ final class AppModel {
         switch check {
         case .ok:
             day.waterEntries.append(WaterEntry(ml: ml, at: now))
-            commit(now: now)
+            commit(now: now, publishNow: true)
         case .dailyLimit:
             showNotice(Quips.waterDailyLimit(seed: daySeed))
         case .tooFast:
@@ -123,7 +126,7 @@ final class AppModel {
     func setSteps(_ total: Int) {
         rolloverIfNeeded(.now)
         day.summary.steps = rules.steps.clamp(total)
-        commit()
+        commit(publishNow: true)
     }
 
     /// Add a walk on top of today's total.
@@ -186,7 +189,7 @@ final class AppModel {
         if kind.credit == .breakTaken {
             Tracker.recordMovement(&day.tracker, at: .now)
         }
-        commit()
+        commit(publishNow: true)
     }
 
     // MARK: Sampling
@@ -205,7 +208,7 @@ final class AppModel {
                 nudges.dismiss()
             }
         }
-        commit(now: now)
+        commit(now: now, publishNow: events.contains { if case .breakDetected = $0 { true } else { false } })
     }
 
     private func rolloverIfNeeded(_ now: Date) {
@@ -217,10 +220,49 @@ final class AppModel {
         day = LocalDay(summary: DaySummary(memberId: memberId, deviceId: deviceId, date: key))
     }
 
-    private func commit(now: Date = .now) {
+    private func commit(now: Date = .now, publishNow: Bool = false) {
         day.refreshSummary(now: now)
         celebrateIfEarned()
         store.save(day)
+        sync.publish(profile: profile, summary: day.summary, force: publishNow)
+    }
+
+    // MARK: Team
+
+    var profile: MemberProfile {
+        MemberProfile(memberId: memberId, nickname: prefs.nickname.trimmingCharacters(in: .whitespaces).isEmpty ? memberId : prefs.nickname)
+    }
+
+    func setSharing(_ enabled: Bool) {
+        prefs.sharingEnabled = enabled
+        if enabled {
+            sync.start(enabled: true)
+            commit(publishNow: true)
+        } else {
+            sync.stop()
+        }
+    }
+
+    func chooseSharedFolder(_ url: URL?) {
+        SharedFolderLocator.override = url
+        sync.relocate()
+        if prefs.sharingEnabled { commit(publishNow: true) }
+    }
+
+    /// Everyone's data plus my own live day, so the board is right even before my file syncs back.
+    func leaderboard(for week: Week) -> [LeaderboardEntry] {
+        var summaries = sync.snapshot.summaries.filter { $0.memberId != memberId || $0.deviceId != deviceId }
+        summaries.append(contentsOf: history.values.filter { week.contains($0.date) })
+        var profiles = sync.snapshot.profiles.filter { $0.memberId != memberId }
+        profiles.append(profile)
+        return Leaderboard.compute(week: week, today: today, profiles: profiles, summaries: summaries, rules: rules)
+    }
+
+    var myRankLine: String? {
+        guard prefs.sharingEnabled else { return nil }
+        let board = leaderboard(for: Week(containing: today))
+        guard board.count > 1, let me = board.first(where: { $0.memberId == memberId }) else { return nil }
+        return "#\(me.rank) of \(board.count) this week"
     }
 
     // MARK: Voice

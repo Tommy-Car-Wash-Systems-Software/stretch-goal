@@ -48,9 +48,15 @@ struct MenuBarView: View {
                         .help(pointsBreakdown)
                 }
                 Text(status.quip).font(.caption).foregroundStyle(.secondary).lineLimit(1)
-                Label(Quips.streak(model.streak), systemImage: model.streak > 0 ? "flame.fill" : "flame")
-                    .font(.caption).foregroundStyle(model.streak > 0 ? .orange : .secondary)
-                    .lineLimit(1)
+                HStack {
+                    Label(Quips.streak(model.streak), systemImage: model.streak > 0 ? "flame.fill" : "flame")
+                        .font(.caption).foregroundStyle(model.streak > 0 ? .orange : .secondary)
+                        .lineLimit(1)
+                    Spacer()
+                    if let rank = model.myRankLine {
+                        Label(rank, systemImage: "trophy").font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    }
+                }
             }
         }
     }

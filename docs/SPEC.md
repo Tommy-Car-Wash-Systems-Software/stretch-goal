@@ -209,7 +209,8 @@ functional labels (buttons, settings, table headers) stay plain; flavor is secon
 
 ## 11. Open items
 
-- Shared library path was not mounted when this spec was written (OneDrive cold). Auto-detect
-  glob must be verified against the real path on first run.
+- ~~Shared library path~~ verified 2026-09-21: the mount name carries a numeric suffix on
+  Brian's Mac (`OneDrive-SharedLibraries-TommyCarWashSystems 2 2`), so discovery lists
+  `~/Library/CloudStorage/OneDrive-SharedLibraries-*` and picks the first containing the library.
 - Whether two-Mac users are common enough to warrant showing per-device detail. MVP: max-merge silently.
 - Exact stretch routine content for the guided Stretch session.
