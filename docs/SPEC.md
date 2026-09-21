@@ -1,10 +1,12 @@
 # Stretch Goal — MVP Spec
 
 Desk-wellness menu bar app for macOS with a friendly team leaderboard synced through a shared
-OneDrive/SharePoint folder. Personal project by Brian Phillips; no company build infrastructure.
+OneDrive/SharePoint folder. Side project by Brian Phillips; no company build infrastructure.
 
-Working name: **Stretch Goal** (dev pun, reads fine company-wide). Bundle id `com.tommycarwash.StretchGoal`.
-Rename is a one-line change in `project.yml` until the first release ships.
+**Status:** MVP complete. Phases 1–4 shipped between 2026-09-16 (0.1.0) and 2026-09-21 (0.5.x).
+This document is the design record; the README is the user-facing description.
+
+Name: **Stretch Goal**. Bundle id `com.tommycarwash.StretchGoal`.
 
 ---
 
@@ -32,7 +34,7 @@ Non-goals for MVP: accounts, server, push notifications across devices, HealthKi
 
 ## 3. Features (MVP)
 
-Mirrors Brian's current personal app, plus a team tab.
+Mirrors Brian's earlier personal menu bar app, plus the team leaderboard.
 
 **Menu bar popover**
 - Header: sitting timer ("Sitting for 3h 10m"), today's active time, longest sit.
@@ -44,9 +46,11 @@ Mirrors Brian's current personal app, plus a team tab.
 - Buttons: Leaderboard, History, Settings, Quit.
 
 **Leaderboard window**
-- This week (Mon–Sun, local time): rank, nickname, points, streak, goals-hit-today badge.
-- Last week collapsed below.
-- "Last synced" timestamp; offline badge when the shared folder is unreachable.
+- This week / last week segmented picker (Mon–Sun, local time): rank, nickname, points, streak,
+  perfect days, steps, goals-hit-today badge. Crown on first place; own row marked "you".
+- Status line: synced-when, members sharing, skipped files; orange when the folder is missing
+  or a sync failed. Empty states for sharing-off and only-you.
+- Reachable via `stretchgoal://leaderboard`.
 
 **Detection**
 - Idle seconds via `CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: ...)`, sampled every 10 s.
@@ -182,23 +186,24 @@ stretch-goal/
 ## 8. Distribution (no CI, no company resources)
 
 - Build locally with `scripts/build.sh`.
-- Ad-hoc codesign for MVP. Users approve once in System Settings → Privacy & Security on first
-  launch. Documented in README. Developer ID + notarization only if a personal Apple Developer
-  membership is worth $99 later.
+- Ad-hoc codesign. Homebrew 7 quarantines every cask with no opt-out, so first launch needs a
+  one-time Privacy & Security → Open Anyway, or `xattr -dr com.apple.quarantine`. Documented in
+  README. Developer ID + notarization would remove that step; not done.
 - Repo `Tommy-Car-Wash-Systems-Software/stretch-goal`; zips published as GitHub Releases by
   `scripts/release.sh` (decision 2026-09-16: company org is fine, company CI is not).
-- Homebrew tap `Tommy-Car-Wash-Systems-Software/homebrew-tap` with cask `stretch-goal`, so
-  install is `brew install --cask --no-quarantine tommy-car-wash-systems-software/tap/stretch-goal`
-  and updates are `brew upgrade`. Casks download with plain curl, so the release repo must be
-  public for brew to work; a private repo still supports manual download from the Releases page.
+- Homebrew tap `Tommy-Car-Wash-Systems-Software/homebrew-tap` with cask `stretch-goal`:
+  `brew tap` + `brew trust` + `brew install --cask stretch-goal`; updates are `brew upgrade`.
+  Casks download with plain curl, so both repos are public (Brian's call, 2026-09-16).
 
 ## 9. Phases
 
-1. **Scaffold** — XcodeGen project, Core package with model + scoring + tests, empty menu bar app that launches. Commit.
-2. **Local tracker** — idle detection, sitting timer, breaks/water/mindful, guided sessions, rings UI, nudges, local daily JSON, week strip, launch at login. Fully useful solo.
-3. **Sync + leaderboard** — folder discovery, own-file writer, reader/merge, leaderboard window, offline cache, opt-in + nickname in Settings.
-4. **Ship** — build/release scripts, README, brew cask, first tagged release to the team.
-5. **Later, if it takes off** — backend + accounts, iOS/watch targets on the same Core package, Windows/Android clients writing the same DaySummary.
+1. ~~**Scaffold**~~ — done 2026-09-16.
+2. ~~**Local tracker**~~ — done 2026-09-16 (0.1.0). Steps + voice 0.2.x, real-world targets 0.3.0,
+   anti-cheat 0.4.x followed from issue #1 and Brian's review.
+3. ~~**Sync + leaderboard**~~ — done 2026-09-21 (0.5.0), once OneDrive was back.
+4. ~~**Ship**~~ — done 2026-09-16 (0.1.0 on GitHub Releases + brew tap); README tour 0.5.1.
+5. **Later, if it takes off** — backend + accounts, iOS/watch targets on the same Core package
+   (HealthKit step sync, the open half of issue #1), Windows/Android clients writing the same DaySummary.
 
 ## 10. Voice (issue #1, 2026-09-16)
 
@@ -212,5 +217,6 @@ functional labels (buttons, settings, table headers) stay plain; flavor is secon
 - ~~Shared library path~~ verified 2026-09-21: the mount name carries a numeric suffix on
   Brian's Mac (`OneDrive-SharedLibraries-TommyCarWashSystems 2 2`), so discovery lists
   `~/Library/CloudStorage/OneDrive-SharedLibraries-*` and picks the first containing the library.
-- Whether two-Mac users are common enough to warrant showing per-device detail. MVP: max-merge silently.
-- Exact stretch routine content for the guided Stretch session.
+- Whether two-Mac users are common enough to warrant showing per-device detail. Today: max-merge silently.
+- ~~Stretch routine content~~ — eight 30 s steps, in `GuidedSession.standard(.stretch)`.
+- Notarization, if the Gatekeeper step turns out to cost adoption.
