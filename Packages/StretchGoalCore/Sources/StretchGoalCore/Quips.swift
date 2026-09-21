@@ -120,6 +120,20 @@ public enum Quips {
 
     public static let historyEmpty = "no history yet. every legend has a day one."
 
+    // MARK: Share card
+
+    public static func shareCaption(points: Int, allGoals: Bool, seed: Int) -> String {
+        let pool: [String] = allGoals
+            ? ["perfect day. no crumbs. cope.", "closed every ring. the chair lost.", "all goals hit. this is what peer pressure looks like."]
+            : points == 0
+                ? ["day one energy. it goes up from here.", "zero points, infinite potential.", "the streak starts tomorrow. probably."]
+                : ["\(points) points of not desk-rotting.", "touched grass. have receipts.", "the leaderboard has been notified."]
+        return pick(pool, seed: seed)
+    }
+
+    public static let repoURL = "https://github.com/Tommy-Car-Wash-Systems-Software/stretch-goal"
+    public static let installHint = "brew tap tommy-car-wash-systems-software/tap && brew install --cask stretch-goal"
+
     // MARK: Steps
 
     /// Absurd unit conversions, per issue #1. Steps per unit are rough on purpose.

@@ -205,6 +205,8 @@ struct MenuBarView: View {
         HStack {
             Button("History") { openWindow(id: WindowID.history); NSApp.activate() }
             Button("Leaderboard") { openWindow(id: WindowID.leaderboard); NSApp.activate() }
+            Button { openWindow(id: WindowID.share); NSApp.activate() } label: { Label("Share", systemImage: "square.and.arrow.up") }
+                .help("Share today's rings and points")
             Button("Settings…") { openSettings(); NSApp.activate() }
             Spacer()
             Button("Quit") { NSApplication.shared.terminate(nil) }

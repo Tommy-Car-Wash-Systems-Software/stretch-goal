@@ -116,6 +116,16 @@ today. Crown on first place. Your row is bold and says *you*, in case you forgot
 To get on the board: **Settings → Team**, pick a nickname, flip **Share my daily totals**. Until
 someone else does the same you'll see the screen above, and it's right: recruit someone.
 
+### Share your day
+
+<img src="docs/screenshots/share.png" width="720" alt="The Share my day window with a rendered card">
+
+**Share** in the popover footer renders a card: your rings, points, streak, the day's numbers, a
+line of commentary, and a QR code that points at this repo so whoever sees it can install the
+app. **Copy image** puts it on the clipboard for Teams. **Copy as text** gives you a one-liner
+for chat. **Share…** opens the system share sheet, **Save…** writes a PNG. Post a perfect day.
+Make it everyone's problem.
+
 ### History
 
 <img src="docs/screenshots/history.png" width="680" alt="History table of recent days">
