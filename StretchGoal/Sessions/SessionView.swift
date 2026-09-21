@@ -79,9 +79,11 @@ struct SessionView: View {
             }
             Spacer()
             if model.sessions.activeSeconds > 0 {
-                Label("hands off the keyboard: \(Int(model.sessions.allowedActiveSeconds - model.sessions.activeSeconds))s of typing left before this doesn't count",
+                Label("hands off the keyboard. \(Int(model.sessions.allowedActiveSeconds - model.sessions.activeSeconds))s of typing left before this doesn't count.",
                       systemImage: "keyboard")
-                    .font(.caption2).foregroundStyle(.orange).lineLimit(2).multilineTextAlignment(.center)
+                    .font(.caption2).foregroundStyle(.orange)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             ProgressView(value: Double(elapsed), total: Double(session.totalSeconds))
             Button("Cancel", role: .cancel) {
