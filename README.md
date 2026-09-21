@@ -55,8 +55,8 @@ Click the walking figure. Everything you need is right here.
 - **Sitting timer.** How long you've been in the chair without a real break. Under it, a line
   of commentary that escalates from *"this is fine. this is still fine."* to *"the chair has
   legally adopted you."* It is not wrong.
-- **Points and streak.** Today's score, top right. Hover it for the exact arithmetic. The flame
-  is your streak of perfect weekdays.
+- **Points and streak.** Today's score, top right. Hover it for the exact arithmetic. The share
+  icon beside it makes a card of your day. The flame is your streak of perfect weekdays.
 - **Rings.** Breaks, water, mindful. Close all three and you get the bonus.
 - **Goals.** Breaks out of 8, water out of 2,000 ml, breathing sessions out of 2, eye rests out
   of 4. Plus active time and your longest sit, because you should know.
@@ -120,7 +120,7 @@ someone else does the same you'll see the screen above, and it's right: recruit 
 
 <img src="docs/screenshots/share.png" width="720" alt="The Share my day window with a rendered card">
 
-**Share** in the popover footer renders a card: your rings, points, streak, the day's numbers, a
+The share icon next to your points renders a card: your rings, points, streak, the day's numbers, a
 line of commentary, and a QR code that points at this repo so whoever sees it can install the
 app. **Copy image** puts it on the clipboard for Teams. **Copy as text** gives you a one-liner
 for chat. **Share…** opens the system share sheet, **Save…** writes a PNG. Post a perfect day.

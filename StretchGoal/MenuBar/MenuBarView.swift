@@ -41,11 +41,16 @@ struct MenuBarView: View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
             let status = model.statusLine(at: context.date)
             VStack(alignment: .leading, spacing: 3) {
-                HStack(alignment: .firstTextBaseline) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text(status.headline).font(.headline).contentTransition(.numericText())
                     Spacer()
                     Text("\(model.score.total) pts").font(.headline.monospacedDigit())
                         .help(pointsBreakdown)
+                    Button { openWindow(id: WindowID.share); NSApp.activate() } label: {
+                        Image(systemName: "square.and.arrow.up").font(.callout)
+                    }
+                    .buttonStyle(.borderless)
+                    .help("Share today's rings and points")
                 }
                 Text(status.quip).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 HStack {
@@ -205,8 +210,6 @@ struct MenuBarView: View {
         HStack {
             Button("History") { openWindow(id: WindowID.history); NSApp.activate() }
             Button("Leaderboard") { openWindow(id: WindowID.leaderboard); NSApp.activate() }
-            Button { openWindow(id: WindowID.share); NSApp.activate() } label: { Label("Share", systemImage: "square.and.arrow.up") }
-                .help("Share today's rings and points")
             Button("Settings…") { openSettings(); NSApp.activate() }
             Spacer()
             Button("Quit") { NSApplication.shared.terminate(nil) }
