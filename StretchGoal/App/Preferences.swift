@@ -15,6 +15,10 @@ final class Preferences {
     var nickname: String { didSet { defaults.set(nickname, forKey: Key.nickname) } }
     var nudgeStyle: NudgeStyle { didSet { defaults.set(nudgeStyle.rawValue, forKey: Key.nudgeStyle) } }
     var sharingEnabled: Bool { didSet { defaults.set(sharingEnabled, forKey: Key.sharingEnabled) } }
+    var waterReminderEnabled: Bool { didSet { defaults.set(waterReminderEnabled, forKey: Key.waterReminderEnabled) } }
+    var waterReminderMinutes: Int { didSet { defaults.set(waterReminderMinutes, forKey: Key.waterReminderMinutes) } }
+    var stepsReminderEnabled: Bool { didSet { defaults.set(stepsReminderEnabled, forKey: Key.stepsReminderEnabled) } }
+    var stepsReminderMinute: Int { didSet { defaults.set(stepsReminderMinute, forKey: Key.stepsReminderMinute) } }
 
     init() {
         nudgeAfterMinutes = defaults.object(forKey: Key.nudgeAfter) as? Int ?? 45
@@ -25,6 +29,10 @@ final class Preferences {
         nickname = defaults.string(forKey: Key.nickname) ?? NSFullUserName()
         nudgeStyle = defaults.string(forKey: Key.nudgeStyle).flatMap(NudgeStyle.init(rawValue:)) ?? .panel
         sharingEnabled = defaults.object(forKey: Key.sharingEnabled) as? Bool ?? false
+        waterReminderEnabled = defaults.object(forKey: Key.waterReminderEnabled) as? Bool ?? true
+        waterReminderMinutes = defaults.object(forKey: Key.waterReminderMinutes) as? Int ?? 60
+        stepsReminderEnabled = defaults.object(forKey: Key.stepsReminderEnabled) as? Bool ?? true
+        stepsReminderMinute = defaults.object(forKey: Key.stepsReminderMinute) as? Int ?? 16 * 60
     }
 
     var trackerConfig: TrackerConfig {
@@ -44,5 +52,9 @@ final class Preferences {
         static let nickname = "prefs.nickname"
         static let nudgeStyle = "prefs.nudgeStyle"
         static let sharingEnabled = "prefs.sharingEnabled"
+        static let waterReminderEnabled = "prefs.waterReminderEnabled"
+        static let waterReminderMinutes = "prefs.waterReminderMinutes"
+        static let stepsReminderEnabled = "prefs.stepsReminderEnabled"
+        static let stepsReminderMinute = "prefs.stepsReminderMinute"
     }
 }

@@ -62,17 +62,29 @@ final class NudgePresenter {
         }
     }
 
+    struct CardAction: Identifiable {
+        let id = UUID()
+        let title: String
+        let tint: Color
+        let run: @MainActor () -> Void
+    }
+
     /// A short, self-dismissing card with no actions: milestones, goals hit, streaks.
     func celebrate(title: String, body: String, symbol: String, tint: Color) {
+        showCard(title: title, body: body, symbol: symbol, tint: tint, actions: [], dismissAfter: .seconds(8))
+    }
+
+    /// A card with buttons: water and steps reminders. Any action dismisses the card.
+    func showCard(title: String, body: String, symbol: String, tint: Color, actions: [CardAction], dismissAfter: Duration) {
         dismiss()
         for screen in NSScreen.screens {
-            let content = CelebrationView(title: title, body: body, symbol: symbol, tint: tint) { [weak self] in self?.dismiss() }
+            let content = ActionCardView(title: title, body: body, symbol: symbol, tint: tint, actions: actions) { [weak self] in self?.dismiss() }
             let panel = makePanel(for: screen, fullScreen: false, content: content)
             panels.append(panel)
             panel.orderFrontRegardless()
         }
         autoDismiss = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(8))
+            try? await Task.sleep(for: dismissAfter)
             guard !Task.isCancelled else { return }
             self?.dismiss()
         }
@@ -111,27 +123,41 @@ final class NudgePresenter {
     }
 }
 
-struct CelebrationView: View {
+struct ActionCardView: View {
     let title: String
     let body_: String
     let symbol: String
     let tint: Color
-    let onTap: () -> Void
+    let actions: [NudgePresenter.CardAction]
+    let onDismiss: () -> Void
 
-    init(title: String, body: String, symbol: String, tint: Color, onTap: @escaping () -> Void) {
+    init(title: String, body: String, symbol: String, tint: Color, actions: [NudgePresenter.CardAction], onDismiss: @escaping () -> Void) {
         self.title = title
         self.body_ = body
         self.symbol = symbol
         self.tint = tint
-        self.onTap = onTap
+        self.actions = actions
+        self.onDismiss = onDismiss
     }
 
     var body: some View {
         HStack(spacing: 14) {
             Image(systemName: symbol).font(.system(size: 30)).foregroundStyle(tint)
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title).font(.headline)
-                Text(body_).font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title).font(.headline).lineLimit(1)
+                Text(body_).font(.callout).foregroundStyle(.secondary).lineLimit(actions.isEmpty ? 2 : 1)
+                if !actions.isEmpty {
+                    HStack(spacing: 6) {
+                        ForEach(actions) { action in
+                            Button(action.title) { onDismiss(); action.run() }
+                                .buttonStyle(NudgeButtonStyle(color: action.tint, compact: true))
+                        }
+                        Spacer()
+                        Button("later") { onDismiss() }
+                            .buttonStyle(NudgeButtonStyle(color: .gray.opacity(0.5), compact: true))
+                    }
+                    .padding(.top, 2)
+                }
             }
             Spacer(minLength: 0)
         }
@@ -140,7 +166,7 @@ struct CelebrationView: View {
         .background(.regularMaterial, in: .rect(cornerRadius: 16))
         .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(tint.opacity(0.35)))
         .contentShape(.rect)
-        .onTapGesture(perform: onTap)
+        .onTapGesture { if actions.isEmpty { onDismiss() } }
     }
 }
 

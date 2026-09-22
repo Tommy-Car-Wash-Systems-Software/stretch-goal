@@ -50,15 +50,18 @@ public struct TrackerState: Codable, Hashable, Sendable {
     public var lastSample: Date?
     public var sitStart: Date?
     public var lastNudgeAt: Date?
+    /// First keyboard/mouse activity seen today. Anchors "you haven't had water in an hour".
+    public var firstActiveAt: Date?
     public var activeSeconds: Int
     public var longestSitSeconds: Int
     public var detectedBreaks: Int
 
-    public init(lastSample: Date? = nil, sitStart: Date? = nil, lastNudgeAt: Date? = nil,
+    public init(lastSample: Date? = nil, sitStart: Date? = nil, lastNudgeAt: Date? = nil, firstActiveAt: Date? = nil,
                 activeSeconds: Int = 0, longestSitSeconds: Int = 0, detectedBreaks: Int = 0) {
         self.lastSample = lastSample
         self.sitStart = sitStart
         self.lastNudgeAt = lastNudgeAt
+        self.firstActiveAt = firstActiveAt
         self.activeSeconds = activeSeconds
         self.longestSitSeconds = longestSitSeconds
         self.detectedBreaks = detectedBreaks
@@ -104,6 +107,9 @@ public enum Tracker {
 
         if state.sitStart == nil {
             state.sitStart = now.addingTimeInterval(-idleSeconds)
+        }
+        if state.firstActiveAt == nil {
+            state.firstActiveAt = now
         }
         if let last = state.lastSample, now.timeIntervalSince(last) <= config.idleThreshold {
             state.activeSeconds += Int(now.timeIntervalSince(last).rounded())

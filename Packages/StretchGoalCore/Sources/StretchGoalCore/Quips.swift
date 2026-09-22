@@ -102,6 +102,26 @@ public enum Quips {
         pick(["4 eye rests. 20-20-20 understood the assignment.", "Eyes rested 4 times. Screen: humbled.", "Eye goal hit. Vision: main character."], seed: seed)
     }
 
+    // MARK: Reminders
+
+    public static func waterReminderTitle(minutes: Int, seed: Int) -> String {
+        pick(["hydration check. \(minutes) min, zero water.", "your water bottle called. it's lonely.", "\(minutes) minutes dry. that's a desert, bestie.", "the coffee doesn't count if you didn't log it. drink water."], seed: seed)
+    }
+
+    public static func waterReminderBody(seed: Int) -> String {
+        pick(["one glass. that's the whole ask.", "hydrate or diedrate.", "your kidneys are typing…", "moisturized. unbothered. that could be you."], seed: seed)
+    }
+
+    public static func stepsReminderTitle(seed: Int) -> String {
+        pick(["steps check. what's the number?", "phone. health app. number. here.", "the leaderboard has no idea how far you walked."], seed: seed)
+    }
+
+    public static func stepsReminderBody(yesterdayMissing: Bool, seed: Int) -> String {
+        yesterdayMissing
+            ? pick(["and yesterday's are blank. you can still fix that.", "yesterday says zero. we both know that's a lie. fix it."], seed: seed)
+            : pick(["log today's total and go home.", "it takes five seconds. the Keurig math awaits."], seed: seed)
+    }
+
     // MARK: Goals & streaks
 
     public static func allGoalsHit(seed: Int) -> String {

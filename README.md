@@ -63,8 +63,8 @@ Click the walking figure. Everything you need is right here.
 - **Water.** Eight drops, one per 250 ml glass. Tap **250 ml** for a glass or **500 ml** for a
   bottle; the bottle fills two drops. The minus undoes. It stops at 2 litres, because that's the
   recommendation and more isn't healthier.
-- **Steps.** Log today's total off your phone or watch with **Log**, or **+500** / **+1k** when
-  you actually went for a walk.
+- **Steps.** **+500** for a walk, or **Log…** to set today's total off your phone or watch.
+  Forgot yesterday? The same window edits the last three days.
 - **Take a break.** The four guided sessions. More below.
 - **Week strip.** Monday to Sunday. Green dot for a perfect day.
 
@@ -82,6 +82,26 @@ The Snooze button is sometimes labeled *(coward)*. We stand by this.
 Not enough? Settings has a **full-screen** style that dims every display until you pick a break
 or snooze. For the truly desk-rotted. There's also plain system notifications if you want to be
 ignored efficiently.
+
+### Reminders
+
+<img src="docs/screenshots/water-reminder.png" width="490" alt="A water reminder card">
+
+Two more cards, same style as the nudges, both adjustable in **Settings → Reminders**:
+
+- **Water.** Go an hour (default) without logging any and a card asks, with 250 ml and 500 ml
+  buttons right on it. Only during work hours, only if you're not already at 2 L.
+- **Steps.** Once a day at a time you pick (default 4 PM), if today still says zero, a card
+  sends you to the log window. If yesterday is blank too, it says so.
+
+### Steps, including yesterday's
+
+<img src="docs/screenshots/steps.png" width="520" alt="The Log steps window with today and the two days before">
+
+Amanda forgot to enter hers and asked. **Log…** opens a window for today and the two days
+before: type a total, or +500 / +1k. Editing a past day rewrites that day's file in the shared
+folder, so the leaderboard catches up on the next refresh. Older than three days is history and
+stays that way.
 
 ### Guided breaks
 

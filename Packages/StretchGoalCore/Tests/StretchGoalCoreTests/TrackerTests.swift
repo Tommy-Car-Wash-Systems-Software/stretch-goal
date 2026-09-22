@@ -160,3 +160,29 @@ import Foundation
         #expect(day.summary.longestSitSeconds == 1500)
     }
 }
+
+@Suite struct FirstActiveTests {
+    @Test func firstActivityIsRecordedOnce() {
+        var s = TrackerState()
+        let t0 = Date(timeIntervalSince1970: 1_789_570_800)
+        let cfg = TrackerConfig(workHours: nil)
+        _ = Tracker.advance(&s, now: t0, idleSeconds: 500, locked: false, config: cfg, calendar: Fixtures.calendar)
+        #expect(s.firstActiveAt == nil)
+        _ = Tracker.advance(&s, now: t0.addingTimeInterval(10), idleSeconds: 0, locked: false, config: cfg, calendar: Fixtures.calendar)
+        #expect(s.firstActiveAt == t0.addingTimeInterval(10))
+        _ = Tracker.advance(&s, now: t0.addingTimeInterval(20), idleSeconds: 0, locked: false, config: cfg, calendar: Fixtures.calendar)
+        #expect(s.firstActiveAt == t0.addingTimeInterval(10))
+    }
+
+    @Test func legacyLocalDayWithoutReminderFlagDecodes() throws {
+        let day = LocalDay(summary: Fixtures.summary("2026-09-16"))
+        var json = try JSONSerialization.jsonObject(with: Codec.encode(day)) as! [String: Any]
+        json.removeValue(forKey: "stepsReminded")
+        var tracker = json["tracker"] as! [String: Any]
+        tracker.removeValue(forKey: "firstActiveAt")
+        json["tracker"] = tracker
+        let decoded = try Codec.decode(LocalDay.self, from: JSONSerialization.data(withJSONObject: json))
+        #expect(!decoded.stepsReminded)
+        #expect(decoded.tracker.firstActiveAt == nil)
+    }
+}

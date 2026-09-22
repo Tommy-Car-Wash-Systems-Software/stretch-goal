@@ -19,15 +19,19 @@ public struct LocalDay: Codable, Hashable, Sendable {
     /// Step milestones already celebrated today, so each fires once.
     public var celebratedMilestones: [Int]
     public var celebratedAllGoals: Bool
+    /// The once-a-day "log your steps" reminder already fired.
+    public var stepsReminded: Bool
 
     public init(summary: DaySummary, tracker: TrackerState = TrackerState(), waterEntries: [WaterEntry] = [],
-                completedSessions: [SessionKind] = [], celebratedMilestones: [Int] = [], celebratedAllGoals: Bool = false) {
+                completedSessions: [SessionKind] = [], celebratedMilestones: [Int] = [], celebratedAllGoals: Bool = false,
+                stepsReminded: Bool = false) {
         self.summary = summary
         self.tracker = tracker
         self.waterEntries = waterEntries
         self.completedSessions = completedSessions
         self.celebratedMilestones = celebratedMilestones
         self.celebratedAllGoals = celebratedAllGoals
+        self.stepsReminded = stepsReminded
     }
 
     private enum LegacyKeys: String, CodingKey { case waterEntriesMl }
@@ -47,6 +51,7 @@ public struct LocalDay: Codable, Hashable, Sendable {
         completedSessions = try c.decode([SessionKind].self, forKey: .completedSessions)
         celebratedMilestones = try c.decodeIfPresent([Int].self, forKey: .celebratedMilestones) ?? []
         celebratedAllGoals = try c.decodeIfPresent(Bool.self, forKey: .celebratedAllGoals) ?? false
+        stepsReminded = try c.decodeIfPresent(Bool.self, forKey: .stepsReminded) ?? false
     }
 
     public var date: DayKey { summary.date }

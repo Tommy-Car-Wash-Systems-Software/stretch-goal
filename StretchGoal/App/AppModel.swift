@@ -122,16 +122,84 @@ final class AppModel {
         }
     }
 
-    /// Replace today's total, as read off a phone or watch.
-    func setSteps(_ total: Int) {
-        rolloverIfNeeded(.now)
-        day.summary.steps = rules.steps.clamp(total)
-        commit(publishNow: true)
+    /// Steps can be corrected for today and the two days before. Older days are history.
+    static let editableStepDays = 3
+
+    var editableDays: [DayKey] { (0..<Self.editableStepDays).map { today.adding(days: -$0) } }
+
+    func steps(on date: DayKey) -> Int {
+        date == today ? day.summary.steps : (pastDays[date]?.steps ?? 0)
     }
 
-    /// Add a walk on top of today's total.
-    func addSteps(_ count: Int) {
-        setSteps(day.summary.steps + count)
+    /// Replace a day's total, as read off a phone or watch. Past days republish their file.
+    func setSteps(_ total: Int, on date: DayKey) {
+        rolloverIfNeeded(.now)
+        let clamped = rules.steps.clamp(total)
+        if date == today {
+            day.summary.steps = clamped
+            commit(publishNow: true)
+            return
+        }
+        guard editableDays.contains(date) else { return }
+        var past = store.load(date) ?? LocalDay(summary: DaySummary(memberId: memberId, deviceId: deviceId, date: date))
+        past.summary.steps = clamped
+        past.summary.updatedAt = .now
+        store.save(past)
+        pastDays[date] = past.summary
+        sync.publish(profile: profile, summary: past.summary, force: true)
+    }
+
+    func setSteps(_ total: Int) { setSteps(total, on: today) }
+
+    /// Add a walk on top of a day's total.
+    func addSteps(_ count: Int, on date: DayKey) {
+        setSteps(steps(on: date) + count, on: date)
+    }
+
+    func addSteps(_ count: Int) { addSteps(count, on: today) }
+
+    // MARK: Reminders
+
+    private var lastWaterReminderAt: Date = .distantPast
+
+    private func checkReminders(now: Date) {
+        guard !locked, prefs.trackerConfig.workHours?.contains(now) ?? true, !nudges.isShowing, !sessions.isRunning else { return }
+
+        if prefs.waterReminderEnabled, !waterAtLimit {
+            let interval = TimeInterval(prefs.waterReminderMinutes * 60)
+            let anchor = day.waterEntries.last?.at ?? day.tracker.firstActiveAt
+            if let anchor, now.timeIntervalSince(anchor) >= interval, now.timeIntervalSince(lastWaterReminderAt) >= interval {
+                lastWaterReminderAt = now
+                let minutes = Int(now.timeIntervalSince(anchor) / 60)
+                nudges.showCard(
+                    title: Quips.waterReminderTitle(minutes: minutes, seed: daySeed + minutes),
+                    body: Quips.waterReminderBody(seed: daySeed + minutes),
+                    symbol: "drop.fill", tint: .blue,
+                    actions: [
+                        .init(title: "250 ml", tint: .blue) { [weak self] in self?.logWater(ml: 250) },
+                        .init(title: "500 ml", tint: .blue) { [weak self] in self?.logWater(ml: 500) },
+                    ],
+                    dismissAfter: .seconds(90)
+                )
+                return
+            }
+        }
+
+        if prefs.stepsReminderEnabled, !day.stepsReminded, day.summary.steps == 0 {
+            let c = Calendar.current.dateComponents([.hour, .minute], from: now)
+            if c.hour! * 60 + c.minute! >= prefs.stepsReminderMinute {
+                day.stepsReminded = true
+                store.save(day)
+                let yesterdayMissing = steps(on: today.adding(days: -1)) == 0 && !today.adding(days: -1).isWeekend()
+                nudges.showCard(
+                    title: Quips.stepsReminderTitle(seed: daySeed),
+                    body: Quips.stepsReminderBody(yesterdayMissing: yesterdayMissing, seed: daySeed),
+                    symbol: "shoeprints.fill", tint: .teal,
+                    actions: [.init(title: "Log steps", tint: .teal) { NSWorkspace.shared.open(URL(string: "stretchgoal://steps")!) }],
+                    dismissAfter: .seconds(120)
+                )
+            }
+        }
     }
 
     // MARK: Celebrations
@@ -209,6 +277,7 @@ final class AppModel {
             }
         }
         commit(now: now, publishNow: events.contains { if case .breakDetected = $0 { true } else { false } })
+        checkReminders(now: now)
     }
 
     private func rolloverIfNeeded(_ now: Date) {

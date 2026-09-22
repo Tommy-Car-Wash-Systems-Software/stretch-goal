@@ -56,6 +56,17 @@ struct SettingsView: View {
                 }
             }
 
+            Section("Reminders") {
+                Toggle("Remind me to drink water", isOn: $prefs.waterReminderEnabled)
+                Stepper("After \(prefs.waterReminderMinutes) min without logging any", value: $prefs.waterReminderMinutes, in: 30...180, step: 15)
+                    .disabled(!prefs.waterReminderEnabled)
+                Toggle("Remind me to log steps", isOn: $prefs.stepsReminderEnabled)
+                DatePicker("Once a day at", selection: minuteBinding($prefs.stepsReminderMinute), displayedComponents: .hourAndMinute)
+                    .disabled(!prefs.stepsReminderEnabled)
+                Text("Only during work hours, only if there's nothing logged yet. Steps can be corrected for today and the two days before, from the Log… button or the reminder.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+
             Section("Work hours") {
                 Toggle("Only track during work hours", isOn: $prefs.workHoursEnabled)
                 DatePicker("Start", selection: minuteBinding($prefs.workStartMinute), displayedComponents: .hourAndMinute)

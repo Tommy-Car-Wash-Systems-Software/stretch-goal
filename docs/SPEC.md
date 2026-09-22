@@ -72,6 +72,11 @@ Mirrors Brian's earlier personal menu bar app, plus the team leaderboard.
   the same `ScoringRules.standard` so the leaderboard stays comparable.
 - Shared folder (auto-detected, with Choose… fallback).
 - Launch at login (`SMAppService`).
+- Reminders (added 0.7.0): water card after N min (default 60) with no water logged, anchored
+  to the last entry or first activity of the day; steps card once a day at a chosen time
+  (default 16:00) if today's steps are 0. Both only in work hours and only when no other card
+  is up. Steps editable for today and the previous two days; past-day edits republish that
+  day's sync file.
 
 ## 4. Scoring
 

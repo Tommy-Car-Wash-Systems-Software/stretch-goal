@@ -51,6 +51,13 @@ struct StretchGoalApp: App {
         .defaultSize(width: 680, height: 420)
         .handlesExternalEvents(matching: ["leaderboard"])
 
+        Window("Log steps", id: WindowID.steps) {
+            StepsLogView()
+                .environment(model)
+        }
+        .windowResizability(.contentSize)
+        .handlesExternalEvents(matching: ["steps"])
+
         Window("Share my day", id: WindowID.share) {
             ShareView()
                 .environment(model)
@@ -70,4 +77,5 @@ enum WindowID {
     static let history = "history"
     static let leaderboard = "leaderboard"
     static let share = "share"
+    static let steps = "steps"
 }

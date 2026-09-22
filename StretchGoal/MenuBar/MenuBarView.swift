@@ -5,9 +5,6 @@ struct MenuBarView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.openWindow) private var openWindow
     @Environment(\.openSettings) private var openSettings
-    @State private var editingSteps = false
-    @State private var stepsDraft = ""
-    @FocusState private var stepsFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -147,35 +144,14 @@ struct MenuBarView: View {
                     .font(.callout.monospacedDigit())
                     .foregroundStyle(model.rules.steps.goalMet(model.day.summary.steps) ? .teal : .secondary)
                 Spacer()
-                Button(editingSteps ? "Done" : "Log") {
-                    editingSteps.toggle()
-                    if editingSteps { stepsDraft = ""; stepsFocused = true }
-                }
-                .controlSize(.small)
+                Button("+500") { model.addSteps(500) }
+                Button("Log…") { openWindow(id: WindowID.steps); NSApp.activate() }
+                    .help("Set today's total, or fix yesterday's")
             }
+            .controlSize(.small)
             ProgressView(value: Double(min(model.day.summary.steps, model.rules.steps.goal)), total: Double(model.rules.steps.goal))
                 .tint(.teal)
-            if editingSteps {
-                HStack(spacing: 6) {
-                    TextField("today's total from your phone", text: $stepsDraft)
-                        .textFieldStyle(.roundedBorder)
-                        .focused($stepsFocused)
-                        .onSubmit(commitStepsDraft)
-                    Button("Set") { commitStepsDraft() }.disabled(Int(stepsDraft.filter(\.isNumber)) == nil)
-                    Button("+500") { model.addSteps(500) }
-                    Button("+1k") { model.addSteps(1000) }
-                }
-                .controlSize(.small)
-                Text("manual for the humble. watch sync lands with the iOS app, for the chronically optimized.")
-                    .font(.caption2).foregroundStyle(.tertiary)
-            }
         }
-    }
-
-    private func commitStepsDraft() {
-        if let total = Int(stepsDraft.filter(\.isNumber)) { model.setSteps(total) }
-        stepsDraft = ""
-        editingSteps = false
     }
 
     private var breaks: some View {
