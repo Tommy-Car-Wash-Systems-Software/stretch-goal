@@ -54,26 +54,34 @@ struct ShareCardView: View {
         }
     }
 
+    private static let ringSize: CGFloat = 320
+    private static let ringStroke: CGFloat = 1 / 11
+    private static var holeDiameter: CGFloat { RingsView.innerDiameter(size: ringSize, rings: 3, strokeFraction: ringStroke) }
+
     private var rings: some View {
-        ZStack {
+        // The label lives in a box 80% of the hole, so three digits shrink to fit instead of
+        // spilling onto the innermost ring.
+        let box = Self.holeDiameter * 0.8
+        return ZStack {
             RingsView(
                 progress: [
                     Double(day.breaks) / Double(rules.breaks.goal),
                     Double(day.waterMl) / Double(rules.water.goalMl),
                     Double(day.mindful) / Double(rules.mindful.goal),
                 ],
-                colors: [green, blue, purple]
+                colors: [green, blue, purple],
+                strokeFraction: Self.ringStroke
             )
-            .frame(width: 320, height: 320)
+            .frame(width: Self.ringSize, height: Self.ringSize)
             VStack(spacing: -2) {
                 Text("\(score.total)")
-                    .font(.system(size: 54, weight: .bold, design: .rounded))
+                    .font(.system(size: 50, weight: .bold, design: .rounded))
                     .monospacedDigit()
-                    .minimumScaleFactor(0.6)
                     .lineLimit(1)
-                Text("points").font(.system(size: 17, weight: .semibold, design: .rounded)).foregroundStyle(.white.opacity(0.6))
+                    .minimumScaleFactor(0.5)
+                Text("points").font(.system(size: 16, weight: .semibold, design: .rounded)).foregroundStyle(.white.opacity(0.6))
             }
-            .frame(width: 130)
+            .frame(width: box, height: box)
         }
     }
 
@@ -178,6 +186,27 @@ enum ShareCard {
         renderer.scale = 2
         return renderer.nsImage
     }
+
+    #if DEBUG
+    /// Renders a card for an invented day so layout can be checked at extreme values.
+    static func renderSample(points total: Int, to url: URL) {
+        var day = DaySummary(memberId: "sample", deviceId: "x", date: DayKey(.now))
+        if total >= 300 {
+            day.breaks = 12; day.waterMl = 2000; day.mindful = 4; day.eyeRests = 12; day.steps = 15_000; day.activeSeconds = 7 * 3600
+        } else {
+            day.breaks = 8; day.waterMl = 2000; day.mindful = 2; day.eyeRests = 4; day.steps = 9_100; day.activeSeconds = 5 * 3600
+        }
+        let score = Score.daily(day, streak: total >= 300 ? 10 : 2)
+        let view = ShareCardView(nickname: "Sample", day: day, score: score, streak: total >= 300 ? 11 : 3, rules: .standard,
+                                 caption: "layout check, ignore me", qr: qrImage(Quips.repoURL, size: 192))
+        let renderer = ImageRenderer(content: view)
+        renderer.scale = 2
+        if let image = renderer.nsImage, let tiff = image.tiffRepresentation, let rep = NSBitmapImageRep(data: tiff),
+           let png = rep.representation(using: .png, properties: [:]) {
+            try? png.write(to: url)
+        }
+    }
+    #endif
 
     static func caption(model: AppModel) -> String {
         let d = model.day.summary

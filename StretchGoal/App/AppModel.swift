@@ -300,6 +300,12 @@ final class AppModel {
         }
     }
     private var debugStepsObserver: (any NSObjectProtocol)?
+    private var debugCardObserver: (any NSObjectProtocol)? = DistributedNotificationCenter.default().addObserver(
+        forName: Notification.Name("com.tommycarwash.StretchGoal.debug.sharecard"), object: nil, queue: .main
+    ) { note in
+        guard let path = note.object as? String else { return }
+        MainActor.assumeIsolated { ShareCard.renderSample(points: 382, to: URL(fileURLWithPath: path)) }
+    }
     #endif
 }
 
