@@ -35,9 +35,9 @@ struct SettingsView: View {
                     }
                 }
                 LabeledContent("Status", value: model.sync.status.label)
-                HStack {
+                VStack(alignment: .leading, spacing: 4) {
                     Button("Stop sharing and remove my files…", role: .destructive) { confirmRemove = true }
-                    Spacer()
+                        .fixedSize()
                     Text("Deletes only your folder. Everyone else's stays.").font(.caption).foregroundStyle(.tertiary)
                 }
                 .confirmationDialog("Remove your files from the shared folder?", isPresented: $confirmRemove) {
