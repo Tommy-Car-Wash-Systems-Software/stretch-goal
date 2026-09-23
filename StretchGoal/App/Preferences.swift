@@ -19,6 +19,8 @@ final class Preferences {
     var waterReminderMinutes: Int { didSet { defaults.set(waterReminderMinutes, forKey: Key.waterReminderMinutes) } }
     var stepsReminderEnabled: Bool { didSet { defaults.set(stepsReminderEnabled, forKey: Key.stepsReminderEnabled) } }
     var stepsReminderMinute: Int { didSet { defaults.set(stepsReminderMinute, forKey: Key.stepsReminderMinute) } }
+    var onboarded: Bool { didSet { defaults.set(onboarded, forKey: Key.onboarded) } }
+    var recapShownForWeek: String { didSet { defaults.set(recapShownForWeek, forKey: Key.recapShownForWeek) } }
 
     init() {
         nudgeAfterMinutes = defaults.object(forKey: Key.nudgeAfter) as? Int ?? 45
@@ -33,6 +35,8 @@ final class Preferences {
         waterReminderMinutes = defaults.object(forKey: Key.waterReminderMinutes) as? Int ?? 60
         stepsReminderEnabled = defaults.object(forKey: Key.stepsReminderEnabled) as? Bool ?? true
         stepsReminderMinute = defaults.object(forKey: Key.stepsReminderMinute) as? Int ?? 16 * 60
+        onboarded = defaults.bool(forKey: Key.onboarded)
+        recapShownForWeek = defaults.string(forKey: Key.recapShownForWeek) ?? ""
     }
 
     var trackerConfig: TrackerConfig {
@@ -56,5 +60,7 @@ final class Preferences {
         static let waterReminderMinutes = "prefs.waterReminderMinutes"
         static let stepsReminderEnabled = "prefs.stepsReminderEnabled"
         static let stepsReminderMinute = "prefs.stepsReminderMinute"
+        static let onboarded = "prefs.onboarded"
+        static let recapShownForWeek = "prefs.recapShownForWeek"
     }
 }

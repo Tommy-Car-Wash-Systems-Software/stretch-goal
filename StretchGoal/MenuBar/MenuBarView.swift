@@ -49,7 +49,20 @@ struct MenuBarView: View {
                     .buttonStyle(.borderless)
                     .help("Share today's rings and points")
                 }
-                Text(status.quip).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                HStack(spacing: 8) {
+                    Text(status.quip).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    Spacer()
+                    Button {
+                        model.setStanding(!model.standing)
+                    } label: {
+                        Label(model.standing ? "Standing" : "Sitting", systemImage: model.standing ? "figure.stand" : "figure.seated.side")
+                            .font(.caption2.weight(.semibold))
+                            .padding(.horizontal, 7).padding(.vertical, 3)
+                            .background(model.standing ? Color.green.opacity(0.25) : Color.secondary.opacity(0.15), in: .capsule)
+                    }
+                    .buttonStyle(.plain)
+                    .help(model.standing ? "Standing desk mode: sitting timer paused, no break credit. Click when you sit back down." : "At a standing desk? Click to pause the sitting timer.")
+                }
                 HStack {
                     Label(Quips.streak(model.streak), systemImage: model.streak > 0 ? "flame.fill" : "flame")
                         .font(.caption).foregroundStyle(model.streak > 0 ? .orange : .secondary)
@@ -183,6 +196,24 @@ struct MenuBarView: View {
     }
 
     private var footer: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            if let v = model.updates.updateAvailable {
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.down.circle.fill").foregroundStyle(.green)
+                    Text("\(v) is out. `brew upgrade` when you get a sec.").font(.caption)
+                    Spacer()
+                    Button("Copy") {
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString("brew upgrade --cask stretch-goal", forType: .string)
+                    }
+                    .controlSize(.mini)
+                }
+            }
+            footerButtons
+        }
+    }
+
+    private var footerButtons: some View {
         HStack {
             Button("History") { openWindow(id: WindowID.history); NSApp.activate() }
             Button("Leaderboard") { openWindow(id: WindowID.leaderboard); NSApp.activate() }

@@ -12,6 +12,7 @@ final class AppModel {
     let sessions = SessionRunner()
     let nudges = NudgePresenter()
     let sync: SyncService
+    let updates: UpdateChecker
     let rules: ScoringRules = .standard
     let deviceId: String
     let memberId: String
@@ -20,6 +21,10 @@ final class AppModel {
     /// Past days only; today lives in `day`.
     private(set) var pastDays: [DayKey: DaySummary]
     private(set) var locked = false
+    private(set) var inCall = false
+    /// Standing-desk mode. Honor system; pauses the sitting timer with no break credit.
+    private(set) var standing = false
+    private(set) var standingSince: Date?
 
     private let store = DayStore()
     private var monitor: ActivityMonitor?
@@ -32,6 +37,7 @@ final class AppModel {
         deviceId = device
         memberId = member
         sync = SyncService(cacheDirectory: store.directory.deletingLastPathComponent())
+        updates = UpdateChecker(currentVersion: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0")
         day = store.load(today) ?? LocalDay(summary: DaySummary(memberId: member, deviceId: device, date: today))
         pastDays = Dictionary(uniqueKeysWithValues: store.loadRecent(limit: 60, excluding: today).map { ($0.date, $0.summary) })
 
@@ -41,7 +47,12 @@ final class AppModel {
         LoginItem.healIfNeeded()
         sync.start(enabled: prefs.sharingEnabled)
         monitor = ActivityMonitor { [weak self] idle, locked in self?.sample(idleSeconds: idle, locked: locked) }
-        Task { await notifier.requestAuthorization() }
+        if prefs.onboarded {
+            Task { await notifier.requestAuthorization() }
+        } else {
+            Task { try? await Task.sleep(for: .seconds(1)); NSWorkspace.shared.open(URL(string: "stretchgoal://welcome")!) }
+        }
+        updates.start()
         #if DEBUG
         observeDebugTriggers()
         #endif
@@ -163,7 +174,7 @@ final class AppModel {
     private var lastWaterReminderAt: Date = .distantPast
 
     private func checkReminders(now: Date) {
-        guard !locked, prefs.trackerConfig.workHours?.contains(now) ?? true, !nudges.isShowing, !sessions.isRunning else { return }
+        guard !locked, !inCall, prefs.trackerConfig.workHours?.contains(now) ?? true, !nudges.isShowing, !sessions.isRunning else { return }
 
         if prefs.waterReminderEnabled, !waterAtLimit {
             let interval = TimeInterval(prefs.waterReminderMinutes * 60)
@@ -260,13 +271,24 @@ final class AppModel {
         commit(publishNow: true)
     }
 
+    // MARK: Standing
+
+    func setStanding(_ value: Bool) {
+        standing = value
+        standingSince = value ? .now : nil
+        if value { nudges.dismiss() }
+        sample(idleSeconds: ActivityMonitor.idleSeconds(), locked: locked)
+    }
+
     // MARK: Sampling
 
     private func sample(idleSeconds: TimeInterval, locked: Bool) {
         let now = Date.now
         self.locked = locked
+        inCall = !locked && CallMonitor.microphoneInUse()
         rolloverIfNeeded(now)
-        let events = Tracker.advance(&day.tracker, now: now, idleSeconds: idleSeconds, locked: locked, config: prefs.trackerConfig)
+        let events = Tracker.advance(&day.tracker, now: now, idleSeconds: idleSeconds, locked: locked,
+                                     inCall: inCall, standing: standing, config: prefs.trackerConfig)
         if locked { nudges.dismiss() }
         for event in events {
             switch event {
@@ -278,6 +300,7 @@ final class AppModel {
         }
         commit(now: now, publishNow: events.contains { if case .breakDetected = $0 { true } else { false } })
         checkReminders(now: now)
+        checkWeeklyRecap()
     }
 
     private func rolloverIfNeeded(_ now: Date) {
@@ -334,14 +357,85 @@ final class AppModel {
         return "#\(me.rank) of \(board.count) this week"
     }
 
+    // MARK: Weekly recap
+
+    private func checkWeeklyRecap() {
+        guard prefs.sharingEnabled, !today.isWeekend(), !nudges.isShowing else { return }
+        let week = Week(containing: today)
+        guard prefs.recapShownForWeek != week.monday.description else { return }
+        let board = leaderboard(for: week.previous)
+        guard board.count > 1, let me = board.first(where: { $0.memberId == memberId }) else { return }
+        prefs.recapShownForWeek = week.monday.description
+        let text = recapText(for: week.previous, board: board)
+        nudges.showCard(
+            title: Quips.recapTitle(rank: me.rank, count: board.count, seed: daySeed),
+            body: "\(me.points) pts · \(me.goalDays) perfect days · \(me.steps.formatted()) steps",
+            symbol: me.rank == 1 ? "crown.fill" : "trophy", tint: me.rank == 1 ? .yellow : .orange,
+            actions: [
+                .init(title: "Copy team recap", tint: .orange) {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(text, forType: .string)
+                },
+                .init(title: "Leaderboard", tint: .gray.opacity(0.6)) { NSWorkspace.shared.open(URL(string: "stretchgoal://leaderboard")!) },
+            ],
+            dismissAfter: .seconds(120)
+        )
+    }
+
+    /// A pasteable team summary for a week.
+    func recapText(for week: Week, board: [LeaderboardEntry]) -> String {
+        let medals = ["🥇", "🥈", "🥉"]
+        let range = "\(week.monday.date().formatted(.dateTime.month(.abbreviated).day())) – \(week.sunday.date().formatted(.dateTime.month(.abbreviated).day()))"
+        var lines = ["Stretch Goal · week of \(range)"]
+        for e in board.prefix(5) {
+            let medal = e.rank <= 3 ? medals[e.rank - 1] : "#\(e.rank)"
+            var bits = ["\(e.points) pts"]
+            if e.goalDays > 0 { bits.append("\(e.goalDays) perfect day\(e.goalDays == 1 ? "" : "s")") }
+            if e.streak > 0 { bits.append("\(e.streak)-day streak") }
+            if e.steps > 0 { bits.append("\(e.steps.formatted()) steps") }
+            lines.append("\(medal) \(e.nickname) · \(bits.joined(separator: " · "))")
+        }
+        if board.count > 5 { lines.append("…and \(board.count - 5) more who also touched grass") }
+        lines.append("new week. the chair is undefeated until it isn't. \(Quips.repoURL)")
+        return lines.joined(separator: "\n")
+    }
+
     // MARK: Voice
 
     func statusLine(at now: Date) -> (headline: String, quip: String) {
         let seed = daySeed + Int(now.timeIntervalSince1970 / 900)
         if locked { return ("Away", Quips.away(seed: seed)) }
+        if standing, let since = standingSince {
+            let m = Int(now.timeIntervalSince(since) / 60)
+            return ("Standing for \(MenuBarView.duration(m * 60))", Quips.standing(minutes: m, seed: seed))
+        }
         let sit = Int(sittingSeconds(at: now))
+        if inCall, sit > 0 { return ("Sitting for \(MenuBarView.duration(sit))", Quips.inCall(seed: seed)) }
         guard sit > 0 else { return ("Not sitting", Quips.notSitting(seed: seed)) }
         return ("Sitting for \(MenuBarView.duration(sit))", Quips.sitting(minutes: sit / 60, seed: seed))
+    }
+
+    /// What the menu bar itself shows: the icon changes with state, minutes appear once the
+    /// sit is long enough to nag about.
+    var menuBarSymbol: String {
+        if locked { return "figure.walk" }
+        if standing { return "figure.stand" }
+        if inCall { return "figure.seated.side" }
+        return sittingSeconds(at: .now) >= TimeInterval(prefs.nudgeAfterMinutes * 60) ? "figure.seated.side" : "figure.walk"
+    }
+
+    var menuBarText: String? {
+        guard !locked, !standing else { return nil }
+        let sit = Int(sittingSeconds(at: .now))
+        guard sit >= prefs.nudgeAfterMinutes * 60 else { return nil }
+        return "\(sit / 60)m"
+    }
+
+    // MARK: Sharing removal
+
+    func stopSharingAndRemoveFiles() throws {
+        prefs.sharingEnabled = false
+        try sync.removeMyFiles(memberId: memberId)
     }
 
     var version: String {

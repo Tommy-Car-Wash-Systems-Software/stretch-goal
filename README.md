@@ -41,8 +41,11 @@ One time only. Or, if Terminal is more your speed:
 xattr -dr com.apple.quarantine "/Applications/Stretch Goal.app" && open "/Applications/Stretch Goal.app"
 ```
 
-Then look for the walking figure in your menu bar. Turn on **Launch at login** in Settings so it
-never leaves. It is a menu bar app: no Dock icon, no windows until you ask for one.
+A welcome window walks you through the rest: nickname, whether to share with the team, launch
+at login, notifications. Then look for the walking figure in your menu bar. It is a menu bar
+app: no Dock icon, no windows until you ask for one.
+
+<img src="docs/screenshots/welcome.png" width="560" alt="The first-run welcome window">
 
 ## The tour
 
@@ -54,7 +57,14 @@ Click the walking figure. Everything you need is right here.
 
 - **Sitting timer.** How long you've been in the chair without a real break. Under it, a line
   of commentary that escalates from *"this is fine. this is still fine."* to *"the chair has
-  legally adopted you."* It is not wrong.
+  legally adopted you."* It is not wrong. The menu bar icon changes too: a seated figure with
+  the minutes next to it once you're past the nudge threshold.
+- **Standing desk?** Click the Sitting chip to flip it to Standing. The sitting timer pauses,
+  no break is credited for it (honor system, but not a free lunch), and it shows how long
+  you've been upright. Click again when you sit.
+- **On a call?** If your microphone is live, the app assumes you're in a meeting: still
+  sitting, no break credit for the silence, and nudges hold until you hang up so a card never
+  lands mid-screen-share.
 - **Points and streak.** Today's score, top right. Hover it for the exact arithmetic. The share
   icon beside it makes a card of your day. The flame is your streak of perfect weekdays.
 - **Rings.** Breaks, water, mindful. Close all three and you get the bonus.
@@ -93,6 +103,12 @@ Two more cards, same style as the nudges, both adjustable in **Settings → Remi
   buttons right on it. Only during work hours, only if you're not already at 2 L.
 - **Steps.** Once a day at a time you pick (default 4 PM), if today still says zero, a card
   sends you to the log window. If yesterday is blank too, it says so.
+
+### Weekly recap
+
+First weekday of a new week, if you're sharing and someone else is too, a card tells you where
+you finished last week with a **Copy team recap** button: a pasteable top five with medals for
+Teams. The same button lives in the leaderboard footer for any week you're looking at.
 
 ### Steps, including yesterday's
 
@@ -163,6 +179,7 @@ testing. That's why there's a cap now.
 
 - **Team.** Nickname, the sharing toggle, where the shared folder was found, and sync status.
   The folder auto-detects inside your OneDrive library; **Choose…** is there if your Mac is weird.
+  **Stop sharing and remove my files** does exactly that, to your folder only, after confirming.
 - **Nudges.** When the first nudge fires, how often it repeats, which style (floating card,
   full screen, or system banner), and a **Preview nudge** button so you don't have to wait 45
   minutes to see it.
@@ -170,6 +187,9 @@ testing. That's why there's a cap now.
   the app judging you on Saturday.
 - **System.** Launch at login (only from the installed copy, so a dev build never becomes your
   login item), and a shortcut to your data folder.
+
+When a newer release exists the popover footer says so, with the `brew upgrade` command one
+click from your clipboard. It checks GitHub every six hours.
 
 ## Scoring
 

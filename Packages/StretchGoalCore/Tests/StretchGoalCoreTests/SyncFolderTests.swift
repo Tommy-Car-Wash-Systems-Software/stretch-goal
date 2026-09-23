@@ -72,3 +72,18 @@ import Foundation
         #expect(decoded.memberCount == 2)
     }
 }
+
+@Suite struct RemoveMemberTests {
+    @Test func removesOnlyOwnFolder() throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: "sg-rm-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        let folder = SyncFolder(root: root)
+        try folder.write(profile: MemberProfile(memberId: "me", nickname: "Me"))
+        try folder.write(summary: Fixtures.summary("2026-09-16", member: "me"))
+        try folder.write(profile: MemberProfile(memberId: "them", nickname: "Them"))
+        try folder.removeMember("me")
+        #expect(folder.memberIds() == ["them"])
+        try folder.removeMember("me") // idempotent
+        #expect(folder.memberIds() == ["them"])
+    }
+}

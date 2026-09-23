@@ -186,3 +186,52 @@ import Foundation
         #expect(decoded.tracker.firstActiveAt == nil)
     }
 }
+
+@Suite struct CallsAndStandingTests {
+    let cal = Fixtures.calendar
+    let t0 = Date(timeIntervalSince1970: 1_789_570_800)
+    let config = TrackerConfig(workHours: nil)
+    func at(_ m: Double) -> Date { t0.addingTimeInterval(m * 60) }
+
+    @discardableResult
+    func run(_ s: inout TrackerState, from: Double, to: Double, idle: TimeInterval = 0, inCall: Bool = false, standing: Bool = false) -> [TrackerEvent] {
+        var events: [TrackerEvent] = []
+        var t = from * 60
+        while t <= to * 60 + 0.001 {
+            events += Tracker.advance(&s, now: t0.addingTimeInterval(t), idleSeconds: idle, locked: false, inCall: inCall, standing: standing, config: config, calendar: cal)
+            t += 10
+        }
+        return events
+    }
+
+    @Test func silentCallKeepsTheSitGoingWithNoBreakCredit() {
+        var s = TrackerState()
+        run(&s, from: 0, to: 10)
+        // 30 minutes on a call, hands off the keyboard the whole time.
+        let events = run(&s, from: 10, to: 40, idle: 900, inCall: true)
+        #expect(events.isEmpty)
+        #expect(s.detectedBreaks == 0)
+        #expect(Int(s.currentSit(at: at(40))) == 40 * 60)
+    }
+
+    @Test func nudgesHoldDuringCallAndFireAfter() {
+        var s = TrackerState()
+        let during = run(&s, from: 0, to: 60, inCall: true)
+        #expect(!during.contains { if case .nudge = $0 { true } else { false } })
+        let after = run(&s, from: 60, to: 61)
+        #expect(after.contains { if case .nudge = $0 { true } else { false } })
+    }
+
+    @Test func standingEndsTheSitWithoutCreditAndHoldsIt() {
+        var s = TrackerState()
+        run(&s, from: 0, to: 30)
+        let events = run(&s, from: 30, to: 50, standing: true)
+        #expect(events.isEmpty)
+        #expect(s.detectedBreaks == 0)
+        #expect(s.sitStart == nil)
+        #expect(s.longestSitSeconds == 1800)
+        #expect(s.activeSeconds == 50 * 60)
+        run(&s, from: 50, to: 55)
+        #expect(Int(s.currentSit(at: at(55))) == 5 * 60)
+    }
+}

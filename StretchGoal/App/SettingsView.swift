@@ -6,6 +6,8 @@ struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @State private var launchAtLogin = LoginItem.isEnabled
     @State private var loginError: String?
+    @State private var confirmRemove = false
+    @State private var removeError: String?
 
     var body: some View {
         @Bindable var prefs = model.prefs
@@ -33,6 +35,19 @@ struct SettingsView: View {
                     }
                 }
                 LabeledContent("Status", value: model.sync.status.label)
+                HStack {
+                    Button("Stop sharing and remove my files…", role: .destructive) { confirmRemove = true }
+                    Spacer()
+                    Text("Deletes only your folder. Everyone else's stays.").font(.caption).foregroundStyle(.tertiary)
+                }
+                .confirmationDialog("Remove your files from the shared folder?", isPresented: $confirmRemove) {
+                    Button("Remove my files", role: .destructive) {
+                        do { try model.stopSharingAndRemoveFiles(); removeError = nil } catch { removeError = error.localizedDescription }
+                    }
+                } message: {
+                    Text("Sharing turns off and your profile and daily files are deleted from the team folder. Your local history stays. You can share again any time.")
+                }
+                if let removeError { Text(removeError).font(.caption).foregroundStyle(.red) }
             }
 
             Section("Nudges") {

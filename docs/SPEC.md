@@ -210,6 +210,15 @@ stretch-goal/
 5. **Later, if it takes off** — backend + accounts, iOS/watch targets on the same Core package
    (HealthKit step sync, the open half of issue #1), Windows/Android clients writing the same DaySummary.
 
+## 9b. Post-MVP additions (0.6–0.8, 2026-09-21 → 23)
+
+- Share card (0.6): 1200×630 render of the day with rings, tiles, quip, repo QR; copy/text/share/save.
+- Reminders (0.7): water after N min, steps once a day; steps editable for 3 days.
+- 0.8: microphone-in-use = in a call (sit continues, no credit, nudges hold); standing-desk mode
+  (sit ends without credit, held until toggled off); menu bar icon reflects state; first-run
+  welcome window; Monday recap card + pasteable team recap; stop-sharing-and-remove-my-files;
+  update check against GitHub Releases every 6 h. Notarization deliberately still not done.
+
 ## 10. Voice (issue #1, 2026-09-16)
 
 Amanda's step-tracking request came with a register the team liked, so the whole app speaks

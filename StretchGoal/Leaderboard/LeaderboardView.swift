@@ -25,7 +25,7 @@ struct LeaderboardView: View {
                 table(entries)
             }
             Divider()
-            footer
+            footer(entries)
         }
         .frame(minWidth: 640, minHeight: 360)
     }
@@ -121,13 +121,19 @@ struct LeaderboardView: View {
         }
     }
 
-    private var footer: some View {
+    private func footer(_ entries: [LeaderboardEntry]) -> some View {
         HStack {
             Button("Refresh") { Task { await model.sync.refresh() } }
                 .disabled(!model.prefs.sharingEnabled || model.sync.isRefreshing)
             if let url = model.sync.folderURL {
                 Button("Show shared folder") { NSWorkspace.shared.activateFileViewerSelecting([url]) }
             }
+            Button("Copy recap") {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(model.recapText(for: week, board: entries), forType: .string)
+            }
+            .help("A pasteable summary of this board for Teams")
+            .disabled(entries.count < 2)
             Spacer()
             Text("points recompute from everyone's daily counts. nobody's file is trusted, including yours.")
                 .font(.caption2).foregroundStyle(.tertiary)

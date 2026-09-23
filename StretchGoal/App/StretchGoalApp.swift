@@ -22,9 +22,15 @@ struct StretchGoalApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra("Stretch Goal", systemImage: "figure.walk") {
+        MenuBarExtra {
             MenuBarView()
                 .environment(model)
+        } label: {
+            if let text = model.menuBarText {
+                Label(text, systemImage: model.menuBarSymbol).labelStyle(.titleAndIcon)
+            } else {
+                Image(systemName: model.menuBarSymbol)
+            }
         }
         .menuBarExtraStyle(.window)
 
@@ -50,6 +56,14 @@ struct StretchGoalApp: App {
         }
         .defaultSize(width: 680, height: 420)
         .handlesExternalEvents(matching: ["leaderboard"])
+
+        Window("Welcome", id: WindowID.welcome) {
+            WelcomeView()
+                .environment(model)
+        }
+        .windowResizability(.contentSize)
+        .defaultPosition(.center)
+        .handlesExternalEvents(matching: ["welcome"])
 
         Window("Log steps", id: WindowID.steps) {
             StepsLogView()
@@ -78,4 +92,5 @@ enum WindowID {
     static let leaderboard = "leaderboard"
     static let share = "share"
     static let steps = "steps"
+    static let welcome = "welcome"
 }

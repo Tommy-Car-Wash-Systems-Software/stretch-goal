@@ -80,11 +80,18 @@ public enum TrackerEvent: Hashable, Sendable {
 /// Pure state machine fed with periodic idle samples. All wall-clock and input-device access
 /// stays in the app so this can be tested with synthetic time.
 public enum Tracker {
+    /// - Parameters:
+    ///   - inCall: the microphone is live. Hands are still, but the person is sitting in a
+    ///     meeting: the sit continues, no break is credited for the silence, and nudges hold.
+    ///   - standing: the person says they are at a standing desk. The sit ends with no credit
+    ///     and nothing restarts until they sit again.
     public static func advance(
         _ state: inout TrackerState,
         now: Date,
         idleSeconds: TimeInterval,
         locked: Bool,
+        inCall: Bool = false,
+        standing: Bool = false,
         config: TrackerConfig = .standard,
         calendar: Calendar = .current
     ) -> [TrackerEvent] {
@@ -97,9 +104,18 @@ public enum Tracker {
         }
 
         let inWorkHours = config.workHours?.contains(now, calendar: calendar) ?? true
-        let active = !locked && idleSeconds < config.idleThreshold && inWorkHours
+        let present = !locked && inWorkHours && (idleSeconds < config.idleThreshold || inCall)
 
-        guard active else {
+        if standing {
+            endSegment(&state, at: now, config: config, events: &events, credit: false)
+            if present, !locked, idleSeconds < config.idleThreshold, let last = state.lastSample, now.timeIntervalSince(last) <= config.idleThreshold {
+                state.activeSeconds += Int(now.timeIntervalSince(last).rounded())
+                if state.firstActiveAt == nil { state.firstActiveAt = now }
+            }
+            return events
+        }
+
+        guard present else {
             let endedAt = locked ? now : now.addingTimeInterval(-idleSeconds)
             endSegment(&state, at: endedAt, config: config, events: &events)
             return events
@@ -118,7 +134,7 @@ public enum Tracker {
         let sit = state.currentSit(at: now)
         state.longestSitSeconds = max(state.longestSitSeconds, Int(sit))
 
-        if sit >= config.nudgeAfter {
+        if sit >= config.nudgeAfter, !inCall {
             let due = state.lastNudgeAt.map { now.timeIntervalSince($0) >= config.nudgeRepeat } ?? true
             if due {
                 state.lastNudgeAt = now
@@ -138,11 +154,11 @@ public enum Tracker {
         state.lastNudgeAt = nil
     }
 
-    private static func endSegment(_ state: inout TrackerState, at endedAt: Date, config: TrackerConfig, events: inout [TrackerEvent]) {
+    private static func endSegment(_ state: inout TrackerState, at endedAt: Date, config: TrackerConfig, events: inout [TrackerEvent], credit: Bool = true) {
         guard let start = state.sitStart else { return }
         let length = max(0, endedAt.timeIntervalSince(start))
         state.longestSitSeconds = max(state.longestSitSeconds, Int(length))
-        if length >= config.minSitForBreak {
+        if credit, length >= config.minSitForBreak {
             state.detectedBreaks += 1
             events.append(.breakDetected(sitSeconds: Int(length)))
         }

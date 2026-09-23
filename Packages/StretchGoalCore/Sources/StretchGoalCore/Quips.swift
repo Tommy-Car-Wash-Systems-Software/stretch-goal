@@ -28,6 +28,22 @@ public enum Quips {
         pick(["not sitting. iconic.", "up and about. as you should.", "standing. we stan."], seed: seed)
     }
 
+    public static func standing(minutes: Int, seed: Int) -> String {
+        pick(["standing for \(minutes)m. upright royalty.", "\(minutes) min on your feet. the chair is jealous.", "vertical era. \(minutes) minutes."], seed: seed)
+    }
+
+    public static func inCall(seed: Int) -> String {
+        pick(["on a call. sitting still counts as sitting, sorry.", "in a meeting. nudges are holding. the chair is not.", "mic's hot. we'll nag you after."], seed: seed)
+    }
+
+    public static func recapTitle(rank: Int, count: Int, seed: Int) -> String {
+        switch rank {
+        case 1: return pick(["last week: #1 of \(count). crown fits.", "you won last week. be normal about it.", "#1 of \(count). the leaderboard is yours, for now."], seed: seed)
+        case 2...3: return pick(["last week: #\(rank) of \(count). podium. respectable.", "#\(rank) of \(count) last week. so close it hurts."], seed: seed)
+        default: return pick(["last week: #\(rank) of \(count). new week, new you.", "#\(rank) of \(count). the chair won last week. rematch."], seed: seed)
+        }
+    }
+
     public static func away(seed: Int) -> String {
         pick(["away. touching grass, presumably.", "screen locked. mysterious.", "gone. the leaderboard remembers."], seed: seed)
     }

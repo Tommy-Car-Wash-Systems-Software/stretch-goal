@@ -72,6 +72,13 @@ public struct SyncFolder: Sendable {
         try text.write(to: url, atomically: true, encoding: .utf8)
     }
 
+    /// The one deletion the protocol allows: a member removing their own folder.
+    public func removeMember(_ memberId: String) throws {
+        let dir = memberDirectory(memberId)
+        guard FileManager.default.fileExists(atPath: dir.path) else { return }
+        try FileManager.default.removeItem(at: dir)
+    }
+
     private func ensureDirectory(_ url: URL) throws {
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
     }

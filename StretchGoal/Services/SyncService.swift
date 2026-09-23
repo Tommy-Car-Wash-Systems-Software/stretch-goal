@@ -106,6 +106,14 @@ final class SyncService {
         }
     }
 
+    /// Stops sharing and deletes this member's folder. Nobody else's files are touched.
+    func removeMyFiles(memberId: String) throws {
+        stop()
+        guard let folder else { return }
+        try folder.removeMember(memberId)
+        lastPublished = .distantPast
+    }
+
     // MARK: Read (everyone's files)
 
     func refresh() async {
